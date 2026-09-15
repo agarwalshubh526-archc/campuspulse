@@ -13,7 +13,8 @@ const CAT_KEYWORDS = {
   Facilities: ['ac','air','projector','cable','chair','desk','light','fan','door','window','leak','floor','bench','table','tap','pipe'],
   Safety:     ['handrail','stair','parking light','unsafe','fire','emergency','broken glass','slip','fall','hazard','smoke','alarm','injury'],
   Cleanliness:['bin','trash','garbage','clean','spill','washroom','toilet','smell','dust','mop','wet','dirty'],
-  Tech:       ['wifi','wi-fi','internet','laptop','printer','network','login','software','app','screen','projector tech','server','mouse','keyboard','projector not']
+  Tech:       ['wifi','wi-fi','internet','laptop','printer','network','login','software','app','screen','projector tech','server','mouse','keyboard','projector not'],
+  Security:   ['bully','ragging','harass','fight','theft','stolen','broken camera','camera broken','mischief','vandalism','abuse','threat','assault']
 };
 
 const ZONES = ['Science Block','Main Building','Library','Central Cafeteria','Lecture Hall','North Parking','Sports Complex'];
@@ -27,7 +28,7 @@ let supportedIds = new Set(loadJSON('cp_supportedIds', []));
 let karma = loadJSON('cp_karma', {reports:0,supports:0,resolved:0,points:0});
 let theme = loadJSON('cp_theme', 'light');
 
-let activeFilter='all', selectedCat='Facilities', selectedPriority='Normal';
+let activeFilter='all', selectedCat='Facilities', selectedPriority='Normal', selectedAnonymous = false;
 let teamMode = false, categoryLocked = false, selectedEvidence = null;
 
 const grid = document.querySelector('#report-grid');
@@ -174,12 +175,16 @@ function renderOracle(){
 /* Cards */
 function card(r,i){
   const supporterBadge = (r.supporters||0)>0 ? `<span class="supporter-badge"><i class="fa-solid fa-user-plus"></i> ${r.supporters}</span>` : '';
+  const anonBadge = r.anonymous ? `<span class="anonymous-badge"><i class="fa-solid fa-user-secret"></i> Anonymous</span>` : '';
   const thumb = r.image ? `<img src="${r.image}" class="card-thumb" alt=""/>` : '';
+  const assigned = r.anonymous
+    ? `<span class="assigned"><span class="avatar" style="background:#f3e5f5;color:#6a1b9a"><i class="fa-solid fa-user-secret"></i></span>Anonymous</span>`
+    : `<span class="assigned"><span class="avatar">${r.owner}</span>Assigned</span>`;
   return `<article class="report-card" data-id="${r.id}" style="animation-delay:${i*.04}s">
-    <div class="card-top"><span class="tag ${r.cat.toLowerCase()}">${r.cat.toUpperCase()}</span><span class="status ${statusClass(r.status)}">${r.status}</span>${supporterBadge}</div>
+    <div class="card-top"><span class="tag ${r.cat.toLowerCase()}">${r.cat.toUpperCase()}</span><span class="status ${statusClass(r.status)}">${r.status}</span>${supporterBadge}${anonBadge}</div>
     ${thumb}<h3>${r.title}</h3>
     <p class="loc"><i class="fa-solid fa-location-dot"></i>${r.loc}</p>
-    <div class="card-bottom"><span>${r.time}</span><span class="assigned"><span class="avatar">${r.owner}</span>Assigned</span></div>
+    <div class="card-bottom"><span>${r.time}</span>${assigned}</div>
   </article>`;
 }
 
@@ -194,17 +199,21 @@ function tracker(r){
     <button type="button" class="${r.status==='Resolved'?'active':''}" data-status="Resolved">Resolved</button>
   </div></div>` : '';
   const image = r.image ? `<img src="${r.image}" class="detail-image" alt="Report evidence"/>` : '';
+  const anonBanner = r.anonymous ? `<div class="anon-banner"><i class="fa-solid fa-user-secret"></i> Anonymous report — identity protected</div>` : '';
+  const ownerLabel = r.anonymous ? 'Campus Safety Team' : 'Campus Operations';
+  const ownerInitials = r.anonymous ? '<i class="fa-solid fa-user-secret"></i>' : r.owner;
+  const ownerStyle = r.anonymous ? 'background:#f3e5f5;color:#6a1b9a' : '';
 
   document.querySelector('#detail-content').innerHTML = `
     <div class="detail-head"><h2>${r.title}</h2><p><i class="fa-solid fa-location-dot"></i> ${r.loc} &nbsp;·&nbsp; ${r.id}</p></div>
-    ${image}
+    ${anonBanner}${image}
     <div class="tracker-status"><span>LIVE STATUS</span><strong class="${statusColorClass(r.status)}">${r.status}</strong></div>
     <div class="timeline">
       <div class="timeline-item done"><b>Report received</b><p>${r.time} · Your voice is on the map.</p></div>
       <div class="timeline-item ${progress||resolved?'done':'current'}"><b>Assigned to Campus Operations</b><p>Facilities coordinator has been notified.</p></div>
       <div class="timeline-item ${resolved?'done':progress?'current':''}"><b>${resolved?'Issue resolved':'Work in progress'}</b><p>${resolved?'The team marked this report complete.':"You’ll see the next update here."}</p></div>
     </div>
-    <div class="owner-row"><span class="avatar">${r.owner}</span><span><strong>Campus Operations</strong>Accountable team owner</span></div>
+    <div class="owner-row"><span class="avatar" style="${ownerStyle}">${ownerInitials}</span><span><strong>${ownerLabel}</strong>${r.anonymous?'Anonymous reporter · routed to safety team':'Accountable team owner'}</span></div>
     <button class="support-btn ${mySupport?'active':''}" id="support-btn" data-id="${r.id}">
       <i class="fa-solid fa-user-plus"></i> ${mySupport?'You support this report':"I’m affected too"} <span>${(r.supporters||0)>0?`· ${r.supporters} supporter${(r.supporters||0)>1?'s':''}`:''}</span>
     </button>
@@ -302,7 +311,7 @@ function suggestCategory(text){
 
 /* Modal */
 const modal = document.querySelector('#modal-layer');
-function openModal(){ if(modal) modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; const note=document.querySelector('#auto-detect'); if(note) note.textContent=''; selectedEvidence=null; const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');} }
+function openModal(){ if(modal) modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; selectedAnonymous=false; const note=document.querySelector('#auto-detect'); if(note) note.textContent=''; selectedEvidence=null; const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');} const anon=document.querySelector('#anonymous'); if(anon) anon.checked=false; }
 function closeModal(){
   if(modal) modal.classList.remove('show');
   document.body.classList.remove('modal-open');
@@ -313,10 +322,11 @@ function closeModal(){
     const cc=document.querySelector('#char-count'); if(cc) cc.textContent='0';
     const note=document.querySelector('#auto-detect'); if(note) note.textContent='';
     document.querySelectorAll('.category').forEach(b=>b.classList.toggle('active', b.dataset.category==='Facilities'));
-    selectedCat='Facilities'; selectedPriority='Normal';
+    selectedCat='Facilities'; selectedPriority='Normal'; selectedAnonymous=false;
     document.querySelectorAll('.priority').forEach(b=>b.classList.toggle('active', b.dataset.priority==='Normal'));
     categoryLocked=false; selectedEvidence=null;
     const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');}
+    const anon=document.querySelector('#anonymous'); if(anon) anon.checked=false;
   },200);
 }
 
@@ -374,6 +384,9 @@ document.querySelectorAll('.priority').forEach(b=>b.onclick=()=>{
   selectedPriority = b.dataset.priority;
 });
 
+const anonCheckbox = document.querySelector('#anonymous');
+if(anonCheckbox) anonCheckbox.onchange = e => selectedAnonymous = e.target.checked;
+
 const detailsEl = document.querySelector('#details');
 if(detailsEl) detailsEl.oninput = e => {
   const cc=document.querySelector('#char-count'); if(cc) cc.textContent = e.target.value.length;
@@ -396,11 +409,12 @@ if(reportForm) reportForm.onsubmit = e => {
     loc,
     status: selectedPriority==='Urgent' ? 'Urgent' : 'In progress',
     time:'Just now',
-    owner: selectedCat==='Tech' ? 'IT' : 'RK',
-    mine:true,
+    owner: selectedAnonymous ? 'CS' : (selectedCat==='Tech' ? 'IT' : 'RK'),
+    mine: !selectedAnonymous,
     priority: selectedPriority,
     supporters:0,
-    image: selectedEvidence
+    image: selectedEvidence,
+    anonymous: selectedAnonymous
   };
   reports.unshift(n);
   saveJSON('campusPulseReports', reports);

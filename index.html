@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusPulse — Campus, in sync.</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="detail.css" />
+  <link rel="stylesheet" href="functional.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#"><span class="brand-mark"><i class="fa-solid fa-bolt"></i></span><span>Campus<span>Pulse</span></span></a>
+      <nav>
+        <a class="nav-link active" data-view="dashboard"><i class="fa-solid fa-grid-2"></i>Overview</a>
+        <a class="nav-link" data-view="reports"><i class="fa-regular fa-flag"></i>My reports</a>
+        <a class="nav-link" data-view="explore"><i class="fa-regular fa-compass"></i>Campus feed <span class="nav-count">12</span></a>
+        <a class="nav-link" data-view="insights"><i class="fa-solid fa-chart-simple"></i>Insights</a>
+      </nav>
+      <div class="sidebar-bottom"><div class="help-card"><i class="fa-solid fa-circle-question"></i><strong>Need urgent help?</strong><span>Security & safety hotline</span><a href="tel:112">Call 112 <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div><div class="profile"><div class="avatar">SA</div><div><strong>Shubh Agarwal</strong><small>Student · FCIT</small></div><i class="fa-solid fa-ellipsis"></i></div></div>
+    </aside>
+    <main>
+      <header><button class="mobile-menu"><i class="fa-solid fa-bars"></i></button><div><p class="eyebrow">TUESDAY, SEPTEMBER 15</p><h1 id="page-title">Good morning, Shubh <span>✦</span></h1></div><div class="header-actions"><button class="icon-btn" aria-label="Notifications"><i class="fa-regular fa-bell"></i><b></b></button><button class="primary-btn report-trigger"><i class="fa-solid fa-plus"></i> Report an issue</button></div></header>
+      <section id="dashboard-view" class="view active-view">
+        <div class="hero-grid">
+          <div class="welcome-card"><div class="welcome-copy"><span class="chip mint"><i class="fa-solid fa-sparkles"></i> CAMPUS, IN SYNC</span><h2>A better campus<br>starts with one tap.</h2><p>See what’s being fixed, share what needs attention, and make every corner of campus count.</p><button class="text-btn report-trigger">Make a report <i class="fa-solid fa-arrow-right"></i></button></div><div class="hero-orb"><span class="orbit o1"></span><span class="orbit o2"></span><i class="fa-solid fa-bolt"></i><span class="pulse-dot d1"></span><span class="pulse-dot d2"></span></div></div>
+          <div class="health-card"><div class="health-top"><div><p class="eyebrow">CAMPUS HEALTH</p><h3><span id="health-score">86</span><small>/100</small></h3></div><span class="trend"><i class="fa-solid fa-arrow-trend-up"></i> 4.2%</span></div><div class="health-bar"><i></i></div><p>Up from last week · <strong>Looking good</strong></p><div class="health-mini"><span><b>12</b>Open items</span><span><b>74%</b>Resolved this month</span></div></div>
+        </div>
+        <div class="metrics"><article><span class="metric-icon coral"><i class="fa-solid fa-wrench"></i></span><div><b id="open-count">12</b><p>Open reports</p></div><span class="metric-change">+2 today</span></article><article><span class="metric-icon purple"><i class="fa-solid fa-clock"></i></span><div><b>3.4h</b><p>Avg. first response</p></div><span class="metric-change good">↓ 18%</span></article><article><span class="metric-icon blue"><i class="fa-solid fa-circle-check"></i></span><div><b>38</b><p>Resolved this month</p></div><span class="metric-change good">↑ 12%</span></article></div>
+        <section class="section-head"><div><p class="eyebrow">LIVE ON CAMPUS</p><h2>What needs attention</h2></div><button class="ghost-btn" id="see-all">View all <i class="fa-solid fa-arrow-right"></i></button></section>
+        <div class="toolbar"><div class="filter-row" id="filters"><button class="filter active" data-filter="all">All reports</button><button class="filter" data-filter="urgent">Urgent</button><button class="filter" data-filter="progress">In progress</button><button class="filter" data-filter="resolved">Resolved</button></div><label class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="search" placeholder="Search reports" /></label></div>
+        <div class="report-grid" id="report-grid"></div>
+      </section>
+      <section id="reports-view" class="view"><div class="empty-intro"><span class="metric-icon blue"><i class="fa-regular fa-flag"></i></span><h2>Your reports, clearly tracked.</h2><p>Every report has an owner, a visible status, and a timeline.</p></div><div class="report-grid" id="my-report-grid"></div></section>
+      <section id="explore-view" class="view"><div class="section-head"><div><p class="eyebrow">THE PULSE</p><h2>Campus activity</h2></div><span class="live-dot">LIVE</span></div><div class="feed" id="feed"></div></section>
+      <section id="insights-view" class="view"><div class="insight-hero"><p class="eyebrow">ACTIONABLE INSIGHT</p><h2>Small fixes. <em>Stronger campus.</em></h2><p>Facilities teams are focusing on the places students flag most.</p><div class="hotspot"><span><i class="fa-solid fa-location-dot"></i></span><div><strong>Science Block is this week’s hotspot</strong><p>4 reports · Facilities team assigned</p></div><button class="text-btn">View reports <i class="fa-solid fa-arrow-right"></i></button></div></div><div class="insight-stats"><article><b>91%</b><p>of reports acknowledged</p></article><article><b>28</b><p>students helped this week</p></article><article><b>2.6h</b><p>fastest response time</p></article></div></section>
+    </main>
+  </div>
+  <div class="modal-layer" id="modal-layer"><div class="modal"><button class="close-modal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="form-state"><span class="chip purple-chip"><i class="fa-solid fa-bolt"></i> NEW REPORT</span><h2>What needs attention?</h2><p class="modal-sub">Share the details. We’ll route it to the right team.</p><form id="report-form"><div class="category-select" id="category-select"><button type="button" class="category active" data-category="Facilities"><i class="fa-solid fa-wrench"></i><span>Facilities</span></button><button type="button" class="category" data-category="Safety"><i class="fa-solid fa-shield-halved"></i><span>Safety</span></button><button type="button" class="category" data-category="Cleanliness"><i class="fa-solid fa-broom"></i><span>Cleanliness</span></button><button type="button" class="category" data-category="Tech"><i class="fa-solid fa-wifi"></i><span>Tech</span></button></div><label>Location<input required id="location" placeholder="e.g. Science Block, Floor 2" /></label><label>What happened?<textarea required id="details" maxlength="180" placeholder="Describe the issue in a few words…"></textarea><small><span id="char-count">0</span>/180</small></label><div class="priority-row"><span>Priority</span><div><button type="button" class="priority active" data-priority="Normal">Normal</button><button type="button" class="priority" data-priority="Urgent">Urgent</button></div></div><button class="primary-btn submit-btn" type="submit">Send report <i class="fa-solid fa-arrow-right"></i></button></form></div><div id="success-state" class="success-state"><div class="success-icon"><i class="fa-solid fa-check"></i></div><span class="chip mint">REPORT SENT</span><h2>Thanks for speaking up.</h2><p>Your report is now visible to the Campus Operations team. We’ll keep you posted here.</p><div class="ticket"><span>REPORT ID</span><strong id="ticket-id">CP-2048</strong></div><button class="primary-btn close-success">Back to campus <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+  <div class="modal-layer" id="detail-layer"><div class="modal detail-modal"><button class="close-detail" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><span class="chip purple-chip"><i class="fa-solid fa-eye"></i> REPORT TRACKER</span><div id="detail-content"></div></div></div>
+  <aside class="notice-panel" id="notice-panel"><div class="notice-head"><strong>Notifications</strong><button id="clear-notices">Mark all read</button></div><div class="notice"><i class="fa-solid fa-wrench"></i><div><b>Lab 204 update</b><span>Campus Operations started work on your report.</span></div></div><div class="notice"><i class="fa-solid fa-circle-check"></i><div><b>Issue resolved</b><span>Cafeteria bin request was completed.</span></div></div></aside>
+  <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span>Report status updated</span></div>
+  <script src="app.js"></script>
+</body>
+</html>

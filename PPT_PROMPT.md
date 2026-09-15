@@ -15,9 +15,9 @@ Create a complete 12-slide, 16:9 startup pitch deck for **CampusPulse**, a Smart
 3. **Reporting exists. Trust doesn’t.** Two-column comparison: fragmented experience (buried chats, black-hole forms, no progress, duplicates) versus campus needs (one home, ownership, priority, insight).
 4. **Report it. Track it. Improve it.** Subtitle: “A student-friendly campus issue hub that gives every report a home—and gives campus teams a pulse.”
 5. **One clear loop from signal to solution.** Horizontal 4-step sequence: Report in seconds → Route with context → Track the outcome → Spot the pattern.
-6. **Designed for daily campus life.** Five features: Fast reporting; Live status; Location context; Campus Health; Hotspot insight.
-7. **Simple enough to ship. Ready to grow.** Three-node architecture: Student browser → CampusPulse vanilla JS app → LocalStorage demo store; caption says API-ready tomorrow.
-8. **A demo in three taps.** Four actions: open dashboard, send facilities issue, see status/health update, filter campus feed. Show a small stylish app mockup rather than a real screenshot.
+6. **Designed for daily campus life.** Five features: Fast reporting; Auto-categorize; Live status; Team mode; Campus Health.
+7. **Simple enough to ship. Ready to grow.** Three-node architecture: Student + team browser → CampusPulse vanilla JS app with auto-categorization and team view → LocalStorage demo store; caption says API-ready tomorrow.
+8. **A demo in five taps.** Five actions: open live dashboard; submit a smart auto-categorized report; toggle Team mode for facilities; update a report status in real time; watch health score and feed react. Show a small stylish app mockup rather than a real screenshot.
 9. **Better feedback creates a better campus.** Three audience cards: Students—voice and follow-through; Teams—prioritized work; Leadership—smarter investment.
 10. **From demo to campus infrastructure.** Four future items: QR room codes, photo + AI categories, team admin workspace, verified resolution loop.
 11. **The best campus tool is one people actually trust.** Split: Challenge: reporting feels bureaucratic. Learning: transparency makes complaints contributions.

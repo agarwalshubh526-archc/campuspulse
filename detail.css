@@ -40,3 +40,4 @@
 }
 .team-actions button:hover{border-color:var(--purple-light)}
 .team-actions button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.detail-image{max-width:100%;max-height:200px;border-radius:12px;margin:16px 0 0;object-fit:cover;border:1px solid var(--line)}

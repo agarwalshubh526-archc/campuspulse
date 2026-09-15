@@ -1,12 +1,12 @@
-/* CampusPulse — student issue hub + facilities team view */
+/* CampusPulse — student issue hub + facilities team view + campus intelligence */
 
 const defaultReports = [
-  { id:'CP-2041', cat:'Facilities', title:'Air conditioning not working', loc:'Science Block · Lab 204', status:'In progress', time:'18 min ago', owner:'RK', mine:true, priority:'Normal', supporters:2 },
-  { id:'CP-2038', cat:'Safety', title:'Loose handrail near staircase', loc:'Main Building · East Wing', status:'Urgent', time:'42 min ago', owner:'AM', mine:false, priority:'Urgent', supporters:1 },
-  { id:'CP-2035', cat:'Cleanliness', title:'Bins need clearing after lunch', loc:'Central Cafeteria', status:'Resolved', time:'1 hr ago', owner:'NK', mine:false, priority:'Normal', supporters:0 },
-  { id:'CP-2032', cat:'Tech', title:'Wi-Fi drops in study zone', loc:'Library · Ground Floor', status:'In progress', time:'2 hrs ago', owner:'IT', mine:true, priority:'Normal', supporters:3 },
-  { id:'CP-2029', cat:'Facilities', title:'Projector cable is damaged', loc:'Lecture Hall B-12', status:'In progress', time:'3 hrs ago', owner:'RK', mine:false, priority:'Normal', supporters:0 },
-  { id:'CP-2023', cat:'Safety', title:'Parking lights are off', loc:'North Parking', status:'Resolved', time:'Yesterday', owner:'AM', mine:false, priority:'Normal', supporters:0 }
+  { id:'CP-2041', cat:'Facilities', title:'Air conditioning not working', loc:'Science Block · Lab 204', status:'In progress', time:'18 min ago', owner:'RK', mine:true, priority:'Normal', supporters:2, image:null },
+  { id:'CP-2038', cat:'Safety', title:'Loose handrail near staircase', loc:'Main Building · East Wing', status:'Urgent', time:'42 min ago', owner:'AM', mine:false, priority:'Urgent', supporters:1, image:null },
+  { id:'CP-2035', cat:'Cleanliness', title:'Bins need clearing after lunch', loc:'Central Cafeteria', status:'Resolved', time:'1 hr ago', owner:'NK', mine:false, priority:'Normal', supporters:0, image:null },
+  { id:'CP-2032', cat:'Tech', title:'Wi-Fi drops in study zone', loc:'Library · Ground Floor', status:'In progress', time:'2 hrs ago', owner:'IT', mine:true, priority:'Normal', supporters:3, image:null },
+  { id:'CP-2029', cat:'Facilities', title:'Projector cable is damaged', loc:'Lecture Hall B-12', status:'In progress', time:'3 hrs ago', owner:'RK', mine:false, priority:'Normal', supporters:0, image:null },
+  { id:'CP-2023', cat:'Safety', title:'Parking lights are off', loc:'North Parking', status:'Resolved', time:'Yesterday', owner:'AM', mine:false, priority:'Normal', supporters:0, image:null }
 ];
 
 const CAT_KEYWORDS = {
@@ -16,15 +16,19 @@ const CAT_KEYWORDS = {
   Tech:       ['wifi','wi-fi','internet','laptop','printer','network','login','software','app','screen','projector tech','server','mouse','keyboard','projector not']
 };
 
+const ZONES = ['Science Block','Main Building','Library','Central Cafeteria','Lecture Hall','North Parking','Sports Complex'];
+
 function loadJSON(key, fallback){ try{ const v=localStorage.getItem(key); return v?JSON.parse(v):fallback }catch{ return fallback } }
 function saveJSON(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)) }catch{} }
 
 let savedReports = loadJSON('campusPulseReports', null);
 let reports = Array.isArray(savedReports) ? savedReports : defaultReports;
 let supportedIds = new Set(loadJSON('cp_supportedIds', []));
+let karma = loadJSON('cp_karma', {reports:0,supports:0,resolved:0,points:0});
+let theme = loadJSON('cp_theme', 'light');
 
 let activeFilter='all', selectedCat='Facilities', selectedPriority='Normal';
-let teamMode = false, categoryLocked = false;
+let teamMode = false, categoryLocked = false, selectedEvidence = null;
 
 const grid = document.querySelector('#report-grid');
 const myGrid = document.querySelector('#my-report-grid');
@@ -32,7 +36,7 @@ const feedEl = document.querySelector('#feed');
 
 let feedItems = [
   {icon:'fa-circle-check', text:'Facilities team resolved the cafeteria bin request', time:'12 min ago'},
-  {icon:'fa-wrench', text:'Maintenance started work in Lab 204', time:'24 min ago'},
+  {icon:'fa-wrench', text:'Maintenance started work on Lab 204', time:'24 min ago'},
   {icon:'fa-user-group', text:'Three students supported the Wi-Fi study-zone report', time:'1 hr ago'},
   {icon:'fa-bolt', text:'New hotspot identified: Science Block', time:'2 hrs ago'}
 ];
@@ -47,6 +51,17 @@ function nextId(){
 }
 function openCount(){ return reports.filter(r=>r.status!=='Resolved').length; }
 function resolvedCount(){ return reports.filter(r=>r.status==='Resolved').length; }
+function zoneOf(loc){ return ZONES.find(z=>loc.toLowerCase().includes(z.toLowerCase())) || loc.split('·')[0].trim(); }
+
+/* Theme */
+function applyTheme(t){
+  theme=t;
+  document.body.classList.toggle('dark', theme==='dark');
+  const icon = document.querySelector('#theme-toggle i');
+  if(icon) icon.className = theme==='dark'?'fa-solid fa-sun':'fa-solid fa-moon';
+  saveJSON('cp_theme', theme);
+}
+function toggleTheme(){ applyTheme(theme==='dark'?'light':'dark'); }
 
 /* Header */
 function updateHeader(){
@@ -55,13 +70,27 @@ function updateHeader(){
   const months = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
   const eyebrow = document.querySelector('#date-eyebrow');
   if(eyebrow) eyebrow.textContent = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
-
   const hour = now.getHours();
   const greeting = hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   const title = document.querySelector('#page-title');
   if(title && document.querySelector('.nav-link.active')?.dataset.view==='dashboard'){
     title.innerHTML = `${greeting}, Shubh <span>✦</span>`;
   }
+}
+
+/* Karma */
+function addKarma(type){
+  if(type==='report'){karma.reports++;karma.points+=20}
+  if(type==='support'){karma.supports++;karma.points+=5}
+  if(type==='resolve'){karma.resolved++;karma.points+=15}
+  saveJSON('cp_karma', karma);
+  renderKarma();
+}
+function renderKarma(){
+  ['karma-reports','karma-supports','karma-points','karma-points-header'].forEach(id=>{
+    const el=document.querySelector('#'+id);
+    if(el) el.textContent = id==='karma-points'||id==='karma-points-header'?karma.points:(id==='karma-reports'?karma.reports:karma.supports);
+  });
 }
 
 /* Health & counts */
@@ -85,10 +114,7 @@ function setResolvedCount(){
 }
 function setHotspot(){
   const counts = {};
-  reports.forEach(r=>{
-    const place = r.loc.split('·')[0].trim();
-    counts[place] = (counts[place]||0)+1;
-  });
+  reports.forEach(r=>{ const z=zoneOf(r.loc); counts[z]=(counts[z]||0)+1; });
   let topPlace='', topCount=0;
   Object.entries(counts).forEach(([p,c])=>{ if(c>topCount){topCount=c; topPlace=p;} });
   const nameEl = document.querySelector('#hotspot-name');
@@ -102,9 +128,10 @@ function setHotspot(){
 /* Cards */
 function card(r,i){
   const supporterBadge = (r.supporters||0)>0 ? `<span class="supporter-badge"><i class="fa-solid fa-user-plus"></i> ${r.supporters}</span>` : '';
+  const thumb = r.image ? `<img src="${r.image}" class="card-thumb" alt=""/>` : '';
   return `<article class="report-card" data-id="${r.id}" style="animation-delay:${i*.04}s">
     <div class="card-top"><span class="tag ${r.cat.toLowerCase()}">${r.cat.toUpperCase()}</span><span class="status ${statusClass(r.status)}">${r.status}</span>${supporterBadge}</div>
-    <h3>${r.title}</h3>
+    ${thumb}<h3>${r.title}</h3>
     <p class="loc"><i class="fa-solid fa-location-dot"></i>${r.loc}</p>
     <div class="card-bottom"><span>${r.time}</span><span class="assigned"><span class="avatar">${r.owner}</span>Assigned</span></div>
   </article>`;
@@ -120,9 +147,11 @@ function tracker(r){
     <button type="button" class="${r.status==='Urgent'?'active':''}" data-status="Urgent">Urgent</button>
     <button type="button" class="${r.status==='Resolved'?'active':''}" data-status="Resolved">Resolved</button>
   </div></div>` : '';
+  const image = r.image ? `<img src="${r.image}" class="detail-image" alt="Report evidence"/>` : '';
 
   document.querySelector('#detail-content').innerHTML = `
     <div class="detail-head"><h2>${r.title}</h2><p><i class="fa-solid fa-location-dot"></i> ${r.loc} &nbsp;·&nbsp; ${r.id}</p></div>
+    ${image}
     <div class="tracker-status"><span>LIVE STATUS</span><strong class="${statusColorClass(r.status)}">${r.status}</strong></div>
     <div class="timeline">
       <div class="timeline-item done"><b>Report received</b><p>${r.time} · Your voice is on the map.</p></div>
@@ -151,7 +180,7 @@ function toggleSupport(id){
   const r = reports.find(x=>x.id===id);
   if(!r) return;
   const adding = !supportedIds.has(id);
-  if(adding){ supportedIds.add(id); r.supporters = (r.supporters||0)+1; showToast('Support added — this helps prioritize the fix.'); }
+  if(adding){ supportedIds.add(id); r.supporters = (r.supporters||0)+1; addKarma('support'); showToast('Support added — this helps prioritize the fix.'); }
   else { supportedIds.delete(id); r.supporters = Math.max(0,(r.supporters||0)-1); showToast('Support removed.'); }
   saveJSON('cp_supportedIds', [...supportedIds]);
   saveJSON('campusPulseReports', reports);
@@ -165,6 +194,7 @@ function changeStatus(id, newStatus){
   const oldStatus = r.status;
   r.status = newStatus;
   r.priority = newStatus==='Urgent'?'Urgent':r.priority;
+  if(newStatus==='Resolved') addKarma('resolve');
   saveJSON('campusPulseReports', reports);
   showToast(`Status updated to ${newStatus}`);
   addFeed('fa-circle-check', `Campus Operations moved ${r.id} from ${oldStatus} to ${newStatus}`);
@@ -174,7 +204,7 @@ function changeStatus(id, newStatus){
 
 /* Rendering */
 function render(){
-  const query = document.querySelector('#search').value.toLowerCase();
+  const query = document.querySelector('#search')?.value.toLowerCase()||'';
   let list = reports.filter(r=>{
     const matchesFilter = activeFilter==='all' ||
       (activeFilter==='urgent' ? r.status==='Urgent' :
@@ -183,14 +213,16 @@ function render(){
     const matchesSearch = (r.title+' '+r.loc+' '+r.cat).toLowerCase().includes(query);
     return matchesFilter && matchesSearch;
   });
-  grid.innerHTML = list.length
+  if(grid) grid.innerHTML = list.length
     ? list.map(card).join('')
     : '<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i>No matching reports yet.<br>Try another filter or make the first report.</div>';
-  myGrid.innerHTML = reports.filter(r=>r.mine).map(card).join('') ||
+  if(myGrid) myGrid.innerHTML = reports.filter(r=>r.mine).map(card).join('') ||
     '<div class="empty-state"><i class="fa-regular fa-flag"></i>No reports yet — your voice starts the change.</div>';
 
-  document.querySelector('#open-count').textContent = Math.max(0, openCount());
-  setHealth(); setNavCount(); setResolvedCount(); setHotspot();
+  const openC = openCount();
+  const openEl = document.querySelector('#open-count');
+  if(openEl) openEl.textContent = Math.max(0, openC);
+  setHealth(); setNavCount(); setResolvedCount(); setHotspot(); renderKarma(); renderMap(); renderAnalytics(); renderLeaderboard();
   document.querySelectorAll('.report-card').forEach(el=>{
     el.onclick = () => tracker(reports.find(x=>x.id===el.dataset.id));
   });
@@ -198,7 +230,7 @@ function render(){
 
 /* Feed */
 function renderFeed(){
-  feedEl.innerHTML = feedItems.map(x=>`<article class="feed-item"><span class="feed-icon"><i class="fa-solid ${x.icon}"></i></span><p><strong>${x.text}</strong><br>Making campus better, together.</p><time>${x.time}</time></article>`).join('');
+  if(feedEl) feedEl.innerHTML = feedItems.map(x=>`<article class="feed-item"><span class="feed-icon"><i class="fa-solid ${x.icon}"></i></span><p><strong>${x.text}</strong><br>Making campus better, together.</p><time>${x.time}</time></article>`).join('');
 }
 function addFeed(icon,text){
   feedItems.unshift({icon,text,time:'Just now'});
@@ -224,21 +256,34 @@ function suggestCategory(text){
 
 /* Modal */
 const modal = document.querySelector('#modal-layer');
-function openModal(){ modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; document.querySelector('#auto-detect').textContent=''; }
+function openModal(){ if(modal) modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; const note=document.querySelector('#auto-detect'); if(note) note.textContent=''; selectedEvidence=null; const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');} }
 function closeModal(){
-  modal.classList.remove('show');
+  if(modal) modal.classList.remove('show');
   document.body.classList.remove('modal-open');
   setTimeout(()=>{
-    document.querySelector('#form-state').style.display='block';
-    document.querySelector('#success-state').classList.remove('show');
-    document.querySelector('#report-form').reset();
-    document.querySelector('#char-count').textContent='0';
-    document.querySelector('#auto-detect').textContent='';
+    const fs=document.querySelector('#form-state'); if(fs) fs.style.display='block';
+    const ss=document.querySelector('#success-state'); if(ss) ss.classList.remove('show');
+    const form=document.querySelector('#report-form'); if(form) form.reset();
+    const cc=document.querySelector('#char-count'); if(cc) cc.textContent='0';
+    const note=document.querySelector('#auto-detect'); if(note) note.textContent='';
     document.querySelectorAll('.category').forEach(b=>b.classList.toggle('active', b.dataset.category==='Facilities'));
     selectedCat='Facilities'; selectedPriority='Normal';
     document.querySelectorAll('.priority').forEach(b=>b.classList.toggle('active', b.dataset.priority==='Normal'));
-    categoryLocked=false;
+    categoryLocked=false; selectedEvidence=null;
+    const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');}
   },200);
+}
+
+/* Evidence upload */
+function handleEvidence(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    selectedEvidence = e.target.result;
+    const prev = document.querySelector('#evidence-preview');
+    if(prev){ prev.src=selectedEvidence; prev.classList.add('show'); }
+  };
+  reader.readAsDataURL(file);
 }
 
 /* Team mode */
@@ -247,6 +292,7 @@ function setTeamMode(on){
   const btn = document.querySelector('#team-toggle');
   if(btn) btn.classList.toggle('active', teamMode);
   if(teamMode) showToast('Team view enabled — you can update report statuses');
+  render();
 }
 
 /* Event bindings */
@@ -257,12 +303,15 @@ document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{
   render();
 });
 
-document.querySelector('#search').oninput = render;
+const searchInput = document.querySelector('#search');
+if(searchInput) searchInput.oninput = render;
 
 document.querySelectorAll('.report-trigger').forEach(b=>b.onclick=openModal);
-document.querySelector('.close-modal').onclick = closeModal;
-document.querySelector('.close-success').onclick = closeModal;
-modal.onclick = e => { if(e.target===modal) closeModal(); };
+const closeModalBtn = document.querySelector('.close-modal');
+if(closeModalBtn) closeModalBtn.onclick = closeModal;
+const closeSuccessBtn = document.querySelector('.close-success');
+if(closeSuccessBtn) closeSuccessBtn.onclick = closeModal;
+if(modal) modal.onclick = e => { if(e.target===modal) closeModal(); };
 
 document.querySelectorAll('.category').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.category').forEach(x=>x.classList.remove('active'));
@@ -279,12 +328,17 @@ document.querySelectorAll('.priority').forEach(b=>b.onclick=()=>{
   selectedPriority = b.dataset.priority;
 });
 
-document.querySelector('#details').oninput = e => {
-  document.querySelector('#char-count').textContent = e.target.value.length;
+const detailsEl = document.querySelector('#details');
+if(detailsEl) detailsEl.oninput = e => {
+  const cc=document.querySelector('#char-count'); if(cc) cc.textContent = e.target.value.length;
   suggestCategory(e.target.value);
 };
 
-document.querySelector('#report-form').onsubmit = e => {
+const evidenceEl = document.querySelector('#evidence');
+if(evidenceEl) evidenceEl.onchange = e => handleEvidence(e.target.files[0]);
+
+const reportForm = document.querySelector('#report-form');
+if(reportForm) reportForm.onsubmit = e => {
   e.preventDefault();
   const detail = document.querySelector('#details').value.trim();
   const loc = document.querySelector('#location').value.trim();
@@ -299,86 +353,226 @@ document.querySelector('#report-form').onsubmit = e => {
     owner: selectedCat==='Tech' ? 'IT' : 'RK',
     mine:true,
     priority: selectedPriority,
-    supporters:0
+    supporters:0,
+    image: selectedEvidence
   };
   reports.unshift(n);
   saveJSON('campusPulseReports', reports);
-  document.querySelector('#ticket-id').textContent = n.id;
-  document.querySelector('#form-state').style.display='none';
-  document.querySelector('#success-state').classList.add('show');
+  addKarma('report');
+  const ticket=document.querySelector('#ticket-id'); if(ticket) ticket.textContent = n.id;
+  const fs=document.querySelector('#form-state'); if(fs) fs.style.display='none';
+  const ss=document.querySelector('#success-state'); if(ss) ss.classList.add('show');
   addFeed('fa-bolt', `New ${n.cat.toLowerCase()} report submitted: ${n.title}`);
   render();
 };
 
 function closeDetail(){ document.querySelector('#detail-layer').classList.remove('show'); document.body.classList.remove('modal-open'); }
-document.querySelector('.close-detail').onclick = closeDetail;
-document.querySelector('#detail-layer').onclick = e => {
-  if(e.target===document.querySelector('#detail-layer')) closeDetail();
-};
+const closeDetailBtn = document.querySelector('.close-detail');
+if(closeDetailBtn) closeDetailBtn.onclick = closeDetail;
+const detailLayer = document.querySelector('#detail-layer');
+if(detailLayer) detailLayer.onclick = e => { if(e.target===detailLayer) closeDetail(); };
 
 /* Navigation */
-const titles = { dashboard:'Good morning, Shubh', reports:'My reports', explore:'Campus feed', insights:'Campus insights' };
+const titles = { dashboard:'Good morning, Shubh', map:'Campus map', reports:'My reports', explore:'Campus feed', insights:'Campus insights' };
 document.querySelectorAll('.nav-link').forEach(a=>a.onclick=()=>{
   document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
   a.classList.add('active');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active-view'));
-  document.querySelector('#'+a.dataset.view+'-view').classList.add('active-view');
+  const target = document.querySelector('#'+a.dataset.view+'-view');
+  if(target) target.classList.add('active-view');
   const title = document.querySelector('#page-title');
   if(a.dataset.view==='dashboard'){ updateHeader(); }
-  else if(title){ title.innerHTML = titles[a.dataset.view]; }
+  else if(title){ title.innerHTML = titles[a.dataset.view] || 'CampusPulse'; }
   document.querySelector('.sidebar').classList.remove('open');
+  if(a.dataset.view==='map') renderMap();
+  if(a.dataset.view==='insights') renderAnalytics();
 });
 
-document.querySelector('#see-all').onclick = () => document.querySelector('[data-view="explore"]').click();
-document.querySelector('.mobile-menu').onclick = () => document.querySelector('.sidebar').classList.toggle('open');
+const seeAllBtn = document.querySelector('#see-all');
+if(seeAllBtn) seeAllBtn.onclick = () => document.querySelector('[data-view="explore"]').click();
+const mobileMenu = document.querySelector('.mobile-menu');
+if(mobileMenu) mobileMenu.onclick = () => document.querySelector('.sidebar').classList.toggle('open');
 
 /* Notifications */
 function showToast(msg){
   const t = document.querySelector('#toast');
+  if(!t) return;
   t.querySelector('span').textContent = msg;
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
 const noticePanel = document.querySelector('#notice-panel');
-document.querySelector('.icon-btn[aria-label="Notifications"]').onclick = e => {
-  e.stopPropagation();
-  noticePanel.classList.toggle('show');
-};
-document.querySelector('#clear-notices').onclick = () => {
+const notifBtn = document.querySelector('.icon-btn[aria-label="Notifications"]');
+if(notifBtn) notifBtn.onclick = e => { e.stopPropagation(); noticePanel.classList.toggle('show'); };
+const clearNotices = document.querySelector('#clear-notices');
+if(clearNotices) clearNotices.onclick = () => {
   noticePanel.classList.remove('show');
-  document.querySelector('.icon-btn[aria-label="Notifications"] b').style.display='none';
+  const dot = document.querySelector('.icon-btn[aria-label="Notifications"] b');
+  if(dot) dot.style.display='none';
   showToast('Notifications marked as read.');
 };
 document.addEventListener('click', e=>{
+  if(!noticePanel) return;
   if(!noticePanel.contains(e.target) && !e.target.closest('.icon-btn[aria-label="Notifications"]')) noticePanel.classList.remove('show');
 });
 
 /* Team toggle */
-document.querySelector('#team-toggle').onclick = () => setTeamMode(!teamMode);
+const teamToggle = document.querySelector('#team-toggle');
+if(teamToggle) teamToggle.onclick = () => setTeamMode(!teamMode);
+
+/* Theme toggle */
+const themeToggle = document.querySelector('#theme-toggle');
+if(themeToggle) themeToggle.onclick = toggleTheme;
 
 /* Reset demo */
-document.querySelector('#reset-demo').onclick = () => {
+const resetBtn = document.querySelector('#reset-demo');
+if(resetBtn) resetBtn.onclick = () => {
   localStorage.removeItem('campusPulseReports');
   localStorage.removeItem('cp_supportedIds');
+  localStorage.removeItem('cp_karma');
+  localStorage.removeItem('cp_theme');
   location.reload();
 };
 
 /* Keyboard shortcuts */
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
-    closeModal();
-    document.querySelector('#detail-layer').classList.remove('show');
-    document.querySelector('.sidebar').classList.remove('open');
-    noticePanel.classList.remove('show');
+    closeModal(); closeDetail();
+    const sb=document.querySelector('.sidebar'); if(sb) sb.classList.remove('open');
+    if(noticePanel) noticePanel.classList.remove('show');
   }
   if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
   if(e.key==='n' || e.key==='N') openModal();
   if(e.key==='t' || e.key==='T') setTeamMode(!teamMode);
-  if(e.key==='/'){ e.preventDefault(); document.querySelector('#search').focus(); }
+  if(e.key==='m' || e.key==='M') document.querySelector('[data-view="map"]')?.click();
+  if(e.key==='/'){ e.preventDefault(); if(searchInput) searchInput.focus(); }
 });
 
+/* Map */
+function zoneCounts(){
+  const counts={};
+  reports.filter(r=>r.status!=='Resolved').forEach(r=>{
+    const z=zoneOf(r.loc);
+    counts[z]=(counts[z]||0)+1;
+  });
+  return counts;
+}
+function renderMap(){
+  const map = document.querySelector('#campus-map');
+  const panel = document.querySelector('#map-panel');
+  if(!map || !panel) return;
+  const counts = zoneCounts();
+  const max = Math.max(1, ...Object.values(counts));
+  map.querySelectorAll('.map-zone').forEach(zone=>{
+    const z = zone.dataset.zone;
+    const c = counts[z]||0;
+    zone.classList.remove('active');
+    if(c===0) zone.style.fill = '';
+    else if(c<=max/3) zone.style.fill = '#fdcb6e';
+    else if(c<=2*max/3) zone.style.fill = '#ffab9a';
+    else zone.style.fill = '#ff7675';
+    zone.onclick = () => {
+      map.querySelectorAll('.map-zone').forEach(zo=>zo.classList.remove('active'));
+      zone.classList.add('active');
+      showZoneReports(z);
+    };
+  });
+  if(!panel.dataset.populated) showZoneReports('All zones');
+}
+function showZoneReports(zone){
+  const panel = document.querySelector('#map-panel');
+  if(!panel) return;
+  panel.dataset.populated = 'true';
+  const list = zone==='All zones'?reports.filter(r=>r.status!=='Resolved'):reports.filter(r=>zoneOf(r.loc)===zone && r.status!=='Resolved');
+  let html = `<h3>${zone}</h3><p>${list.length} open report${list.length!==1?'s':''}</p>`;
+  if(list.length) html += `<div class="report-grid">${list.map((r,i)=>card(r,i)).join('')}</div>`;
+  else html += `<div class="empty-state"><i class="fa-solid fa-map-location-dot"></i>No open reports here.</div>`;
+  panel.innerHTML = html;
+  panel.querySelectorAll('.report-card').forEach(el=>{
+    el.onclick = () => tracker(reports.find(x=>x.id===el.dataset.id));
+  });
+}
+
+/* Analytics */
+function renderAnalytics(){
+  renderCategoryChart();
+  renderTrendChart();
+  renderResolutionGauge();
+}
+function renderCategoryChart(){
+  const el = document.querySelector('#category-chart');
+  if(!el) return;
+  const counts={};
+  reports.forEach(r=>counts[r.cat]=(counts[r.cat]||0)+1);
+  const cats = Object.keys(counts);
+  const total = reports.length||1;
+  const colors = {Facilities:'#6c5ce7',Safety:'#ff7675',Cleanliness:'#00b894',Tech:'#0984e3'};
+  let start=0; let svg='';
+  cats.forEach(cat=>{
+    const pct=counts[cat]/total;
+    const dash=pct*100;
+    svg += `<circle cx="50" cy="50" r="40" fill="none" stroke="${colors[cat]||'#999'}" stroke-width="12" stroke-dasharray="${dash} ${100-dash}" stroke-dashoffset="-${start}" transform="rotate(-90 50 50)"/>`;
+    start += dash;
+  });
+  let legend='';
+  cats.forEach(cat=>legend+=`<span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#7b7f94"><span style="width:8px;height:8px;border-radius:50%;background:${colors[cat]}"></span>${cat} ${counts[cat]}</span>`);
+  el.innerHTML = `<svg viewBox="0 0 100 100" style="width:120px;height:120px">${svg}</svg><div style="display:grid;gap:4px">${legend}</div>`;
+}
+function renderTrendChart(){
+  const el = document.querySelector('#trend-chart');
+  if(!el) return;
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const data = [2,4,3,6,5,8,reports.length];
+  const max = Math.max(...data,1);
+  const bars = data.map((d,i)=>{
+    const h=(d/max)*90;
+    return `<rect x="${12+i*18}" y="${100-h}" width="12" height="${h}" rx="4" fill="url(#trendGrad)"/><text x="${18+i*18}" y="110" font-size="8" text-anchor="middle" fill="#7b7f94">${days[i]}</text>`;
+  }).join('');
+  el.innerHTML = `<svg viewBox="0 0 140 120" style="width:100%;height:120px"><defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6c5ce7"/><stop offset="100%" stop-color="#a29bfe"/></linearGradient></defs>${bars}</svg>`;
+}
+function renderResolutionGauge(){
+  const el = document.querySelector('#resolution-gauge');
+  if(!el) return;
+  const total = reports.length||1;
+  const resolved = resolvedCount();
+  const pct = Math.round((resolved/total)*100);
+  const dash = pct*2.51;
+  el.innerHTML = `<svg viewBox="0 0 120 70" style="width:160px;height:90px"><path d="M20 60 A40 40 0 0 1 100 60" fill="none" stroke="#e9eaf0" stroke-width="10" stroke-linecap="round"/><path d="M20 60 A40 40 0 0 1 100 60" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${dash} 251"/><defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00b894"/><stop offset="100%" stop-color="#55efc4"/></linearGradient></defs><text x="60" y="55" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">${pct}%</text><text x="60" y="70" text-anchor="middle" font-size="9" fill="#7b7f94">resolved</text></svg>`;
+}
+function renderLeaderboard(){
+  const el = document.querySelector('#leaderboard');
+  if(!el) return;
+  const leaders = [
+    {name:'Shubh Agarwal',pts:karma.points,me:true},
+    {name:'Aisha M.',pts:145,me:false},
+    {name:'Rahul K.',pts:132,me:false},
+    {name:'Nisha K.',pts:98,me:false}
+  ].sort((a,b)=>b.pts-a.pts);
+  el.innerHTML = leaders.map((l,i)=>`<li><span class="mini-avatar">${l.name.split(' ').map(x=>x[0]).join('').slice(0,2)}</span>${l.me?'<strong>You</strong>':l.name}<b>${l.pts} pts</b></li>`).join('');
+}
+
+/* Hotspot link */
+const hotspotView = document.querySelector('#hotspot-view');
+if(hotspotView) hotspotView.onclick = () => document.querySelector('[data-view="map"]')?.click();
+
+/* Live simulation */
+function liveTick(){
+  if(document.hidden || teamMode || reports.length===0) return;
+  const open = reports.filter(r=>r.status!=='Resolved');
+  if(!open.length) return;
+  const r = open[Math.floor(Math.random()*open.length)];
+  if(Math.random()>0.6){
+    r.supporters = (r.supporters||0)+1;
+    saveJSON('campusPulseReports', reports);
+    addFeed('fa-user-group', `Another student supported ${r.id}`);
+    render();
+  }
+}
+setInterval(liveTick, 22000);
+
 /* Init */
+applyTheme(theme);
 updateHeader();
 renderFeed();
 render();

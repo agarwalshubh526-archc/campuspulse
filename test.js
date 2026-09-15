@@ -70,6 +70,14 @@ win.addEventListener('load', () => {
 
   // Submit report triggers confetti (canvas should get width set)
   d.querySelector('.report-trigger').click();
+  assert(d.querySelector('#reporter-name') && d.querySelector('#reporter-department') && d.querySelector('#reporter-regno'), 'identified reporter fields exist');
+  d.querySelector('#anonymous').click();
+  assert(d.querySelector('#reporter-name').disabled, 'anonymous mode hides and disables identity fields');
+  d.querySelector('#anonymous').click();
+  assert(!d.querySelector('#reporter-name').disabled, 'identified mode restores identity fields');
+  d.querySelector('#reporter-name').value = 'Test Student';
+  d.querySelector('#reporter-department').value = 'Computer Science';
+  d.querySelector('#reporter-regno').value = '2024-CS-101';
   d.querySelector('#details').value = 'test report';
   d.querySelector('#location').value = 'Library';
   d.querySelector('#report-form').dispatchEvent(new win.Event('submit'));

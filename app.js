@@ -200,13 +200,14 @@ function tracker(r){
   </div></div>` : `<div class="team-actions"><span>TEAM ACTION</span><div class="status-options"><button type="button" class="resolve-lock" data-status="Resolved" ${resolved?'disabled':''}><i class="fa-solid fa-lock"></i> ${resolved?'Resolved':'Mark as resolved'}</button></div></div>`;
   const image = r.image ? `<img src="${r.image}" class="detail-image" alt="Report evidence"/>` : '';
   const anonBanner = r.anonymous ? `<div class="anon-banner"><i class="fa-solid fa-user-secret"></i> Anonymous report — identity protected</div>` : '';
+  const reporterCard = !r.anonymous && r.reporter ? `<div class="reporter-card"><strong><i class="fa-solid fa-user"></i>${r.reporter.name}</strong>${r.reporter.department} · ${r.reporter.regNo}</div>` : '';
   const ownerLabel = r.anonymous ? 'Campus Safety Team' : 'Campus Operations';
   const ownerInitials = r.anonymous ? '<i class="fa-solid fa-user-secret"></i>' : r.owner;
   const ownerStyle = r.anonymous ? 'background:#f3e5f5;color:#6a1b9a' : '';
 
   document.querySelector('#detail-content').innerHTML = `
     <div class="detail-head"><h2>${r.title}</h2><p><i class="fa-solid fa-location-dot"></i> ${r.loc} &nbsp;·&nbsp; ${r.id}</p></div>
-    ${anonBanner}${image}
+    ${anonBanner}${reporterCard}${image}
     <div class="tracker-status"><span>LIVE STATUS</span><strong class="${statusColorClass(r.status)}">${r.status}</strong></div>
     <div class="timeline">
       <div class="timeline-item done"><b>Report received</b><p>${r.time} · Your voice is on the map.</p></div>
@@ -354,7 +355,7 @@ function suggestCategory(text){
 
 /* Modal */
 const modal = document.querySelector('#modal-layer');
-function openModal(){ if(modal) modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; selectedAnonymous=false; const note=document.querySelector('#auto-detect'); if(note) note.textContent=''; selectedEvidence=null; const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');} const anon=document.querySelector('#anonymous'); if(anon) anon.checked=false; }
+function openModal(){ if(modal) modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; selectedAnonymous=false; const note=document.querySelector('#auto-detect'); if(note) note.textContent=''; selectedEvidence=null; const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');} const anon=document.querySelector('#anonymous'); if(anon) anon.checked=false; setReporterFields(false); }
 function closeModal(){
   if(modal) modal.classList.remove('show');
   document.body.classList.remove('modal-open');
@@ -369,7 +370,7 @@ function closeModal(){
     document.querySelectorAll('.priority').forEach(b=>b.classList.toggle('active', b.dataset.priority==='Normal'));
     categoryLocked=false; selectedEvidence=null;
     const prev=document.querySelector('#evidence-preview'); if(prev){prev.src='';prev.classList.remove('show');}
-    const anon=document.querySelector('#anonymous'); if(anon) anon.checked=false;
+    const anon=document.querySelector('#anonymous'); if(anon) anon.checked=false; setReporterFields(false);
   },200);
 }
 
@@ -427,8 +428,14 @@ document.querySelectorAll('.priority').forEach(b=>b.onclick=()=>{
   selectedPriority = b.dataset.priority;
 });
 
+function setReporterFields(anonymous){
+  const block = document.querySelector('#reporter-details');
+  const inputs = document.querySelectorAll('#reporter-details input');
+  if(block) block.classList.toggle('hidden', anonymous);
+  inputs.forEach(input=>{ input.disabled=anonymous; input.required=!anonymous; if(anonymous) input.value=''; });
+}
 const anonCheckbox = document.querySelector('#anonymous');
-if(anonCheckbox) anonCheckbox.onchange = e => selectedAnonymous = e.target.checked;
+if(anonCheckbox) anonCheckbox.onchange = e => { selectedAnonymous = e.target.checked; setReporterFields(selectedAnonymous); };
 
 const detailsEl = document.querySelector('#details');
 if(detailsEl) detailsEl.oninput = e => {
@@ -444,7 +451,10 @@ if(reportForm) reportForm.onsubmit = e => {
   e.preventDefault();
   const detail = document.querySelector('#details').value.trim();
   const loc = document.querySelector('#location').value.trim();
-  if(!detail || !loc) return;
+  const reporterName = document.querySelector('#reporter-name')?.value.trim()||'';
+  const reporterDepartment = document.querySelector('#reporter-department')?.value.trim()||'';
+  const reporterRegNo = document.querySelector('#reporter-regno')?.value.trim()||'';
+  if(!detail || !loc || (!selectedAnonymous && (!reporterName || !reporterDepartment || !reporterRegNo))){ showToast('Please complete the required report details.'); return; }
   const n = {
     id: nextId(),
     cat: selectedCat,
@@ -457,7 +467,8 @@ if(reportForm) reportForm.onsubmit = e => {
     priority: selectedPriority,
     supporters:0,
     image: selectedEvidence,
-    anonymous: selectedAnonymous
+    anonymous: selectedAnonymous,
+    reporter: selectedAnonymous ? null : {name:reporterName, department:reporterDepartment, regNo:reporterRegNo}
   };
   reports.unshift(n);
   saveJSON('campusPulseReports', reports);

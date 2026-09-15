@@ -43,6 +43,14 @@
           <div class="welcome-card"><div class="welcome-copy"><span class="chip mint"><i class="fa-solid fa-wand-magic-sparkles"></i> CAMPUS, IN SYNC</span><h2>A better campus<br>starts with one tap.</h2><p>See what’s being fixed, share what needs attention, and make every corner of campus count.</p><button class="text-btn report-trigger">Make a report <i class="fa-solid fa-arrow-right"></i></button></div><div class="hero-orb"><span class="orbit o1"></span><span class="orbit o2"></span><i class="fa-solid fa-bolt"></i><span class="pulse-dot d1"></span><span class="pulse-dot d2"></span></div></div>
           <div class="health-card"><div class="health-top"><div><p class="eyebrow">CAMPUS HEALTH</p><h3><span id="health-score">86</span><small>/100</small></h3></div><span class="trend"><i class="fa-solid fa-arrow-trend-up"></i> 4.2%</span></div><div class="health-bar"><i></i></div><p>Up from last week · <strong>Looking good</strong></p><div class="health-mini"><span><b>12</b>Open items</span><span><b>74%</b>Resolved this month</span></div></div>
         </div>
+        <div class="prediction-strip">
+          <div class="oracle-card">
+            <span class="chip purple-chip"><i class="fa-solid fa-wand-magic-sparkles"></i> CAMPUS ORACLE</span>
+            <h3 id="oracle-headline">Predicting the next campus issue…</h3>
+            <p id="oracle-meta">Analyzing patterns across recent reports</p>
+            <div class="prediction-list" id="prediction-list"></div>
+          </div>
+        </div>
         <div class="metrics">
           <article><span class="metric-icon coral"><i class="fa-solid fa-wrench"></i></span><div><b id="open-count">12</b><p>Open reports</p></div><span class="metric-change">+2 today</span></article>
           <article><span class="metric-icon purple"><i class="fa-solid fa-clock"></i></span><div><b>3.4h</b><p>Avg. first response</p></div><span class="metric-change good">↓ 18%</span></article>
@@ -92,6 +100,8 @@
 
       <section id="insights-view" class="view">
         <div class="insight-hero"><p class="eyebrow">ACTIONABLE INSIGHT</p><h2>Small fixes. <em>Stronger campus.</em></h2><p>Facilities teams are focusing on the places students flag most.</p><div class="hotspot"><span><i class="fa-solid fa-location-dot"></i></span><div><strong id="hotspot-name">Science Block is this week’s hotspot</strong><p id="hotspot-meta">4 reports · Facilities team assigned</p></div><button class="text-btn" id="hotspot-view">View reports <i class="fa-solid fa-arrow-right"></i></button></div></div>
+        <section class="section-head"><div><p class="eyebrow">PREDICTIVE INTELLIGENCE</p><h2>What may break next</h2></div></section>
+        <div class="prediction-grid" id="insights-predictions"></div>
         <div class="analytics-grid">
           <article class="chart-card"><h4>By category</h4><div class="chart" id="category-chart"></div></article>
           <article class="chart-card"><h4>7-day trend</h4><div class="chart" id="trend-chart"></div></article>

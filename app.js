@@ -125,6 +125,48 @@ function setHotspot(){
   }
 }
 
+/* Campus Oracle — predictive intelligence */
+function generatePredictions(){
+  const catGroups={};
+  const zoneGroups={};
+  reports.filter(r=>r.status!=='Resolved').forEach(r=>{
+    const z=zoneOf(r.loc);
+    if(!catGroups[r.cat]) catGroups[r.cat]={zone:'any campus location',cat:r.cat,count:0,supporters:0};
+    catGroups[r.cat].count++;
+    catGroups[r.cat].supporters += (r.supporters||0);
+    if(!zoneGroups[z]) zoneGroups[z]={zone:z,cat:'Multi-category issue',count:0,supporters:0};
+    zoneGroups[z].count++;
+    zoneGroups[z].supporters += (r.supporters||0);
+  });
+  const preds=[
+    ...Object.values(catGroups).filter(g=>g.count>=2),
+    ...Object.values(zoneGroups).filter(g=>g.count>=2)
+  ].map(g=>({...g,confidence:Math.min(95,Math.round(35+g.count*18+g.supporters*1))}))
+   .sort((a,b)=>b.confidence-a.confidence)
+   .slice(0,3);
+  return preds;
+}
+function renderOracle(){
+  const preds = generatePredictions();
+  const headline = document.querySelector('#oracle-headline');
+  const meta = document.querySelector('#oracle-meta');
+  if(!headline || !meta) return;
+  if(preds.length){
+    const top = preds[0];
+    const zoneText = top.zone==='any campus location'?'anywhere on campus':'in '+top.zone;
+    headline.textContent = `${top.cat} issue likely ${zoneText}`;
+    meta.textContent = `${top.confidence}% confidence · based on ${top.count} recent reports`;
+  } else {
+    headline.textContent = 'No strong failure signals yet';
+    meta.textContent = 'Campus Oracle learns as more reports arrive';
+  }
+  const list = document.querySelector('#prediction-list');
+  const insights = document.querySelector('#insights-predictions');
+  const html = preds.map(p=>`<article class="prediction-item"><b>${p.cat} · ${p.zone}</b><span>${p.count} reports · ${p.confidence}% confidence</span><div class="confidence"><i style="width:${p.confidence}%"></i></div></article>`).join('');
+  if(list) list.innerHTML = html;
+  if(insights) insights.innerHTML = preds.length ? html : '<div class="empty-state"><i class="fa-solid fa-wand-magic-sparkles"></i>No predictions yet — more reports help the Oracle learn.</div>';
+}
+
 /* Cards */
 function card(r,i){
   const supporterBadge = (r.supporters||0)>0 ? `<span class="supporter-badge"><i class="fa-solid fa-user-plus"></i> ${r.supporters}</span>` : '';
@@ -222,7 +264,7 @@ function render(){
   const openC = openCount();
   const openEl = document.querySelector('#open-count');
   if(openEl) openEl.textContent = Math.max(0, openC);
-  setHealth(); setNavCount(); setResolvedCount(); setHotspot(); renderKarma(); renderMap(); renderAnalytics(); renderLeaderboard();
+  setHealth(); setNavCount(); setResolvedCount(); setHotspot(); renderOracle(); renderKarma(); renderMap(); renderAnalytics(); renderLeaderboard();
   document.querySelectorAll('.report-card').forEach(el=>{
     el.onclick = () => tracker(reports.find(x=>x.id===el.dataset.id));
   });

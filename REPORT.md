@@ -60,6 +60,9 @@
 - Single weakest area found: static numbers and a one-click support button that felt shallow.
 - **Fixed:** wired all counters to live data, made support a toggle tied to the user, and added a demo-reset for judges.
 
+## Unique differentiator: Campus Oracle
+While most hackathon projects stop at reactive issue reporting, CampusPulse adds **Campus Oracle** — a client-side predictive intelligence layer that analyzes report clusters (location + category patterns) to surface *what is likely to break next* with a confidence score. It turns a complaint board into a proactive maintenance tool.
+
 ## Deployment
 - **GitHub repo:** https://github.com/agarwalshubh526-archc/campuspulse
 - **Live site:** https://campuspulse-kohl.vercel.app

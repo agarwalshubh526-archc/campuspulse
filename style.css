@@ -441,6 +441,29 @@ body.dark .labels text{fill:#c5c6d8}
 .evidence-preview{max-width:120px;max-height:90px;border-radius:8px;margin-top:10px;display:none;object-fit:cover;border:1px solid var(--line)}
 .evidence-preview.show{display:block}
 
+.prediction-strip{margin-bottom:26px}
+.oracle-card{
+  background:linear-gradient(115deg,#2a1f4a 0%,#3b2e63 100%);color:#fff;border-radius:var(--radius);padding:28px 30px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.oracle-card::before{
+  content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(162,155,254,0.35) 0,transparent 70%);
+}
+.oracle-card .chip{background:rgba(255,255,255,0.12);color:#e0dcff;border:1px solid rgba(255,255,255,0.12)}
+.oracle-card h3{font-size:22px;margin:16px 0 6px;position:relative;z-index:1}
+.oracle-card>p{font-size:12px;color:#c5c6d8;margin:0 0 18px;position:relative;z-index:1}
+.prediction-list{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+.prediction-item{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;min-width:180px;
+}
+.prediction-item b{display:block;font-size:12.5px;margin-bottom:6px}
+.prediction-item span{font-size:10px;color:#c5c6d8;display:block;margin-bottom:6px}
+.confidence{height:5px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden}
+.confidence i{height:100%;display:block;background:linear-gradient(90deg,#bff6d8,#a29bfe);border-radius:10px;transition:width .6s}
+.prediction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
+body.dark .oracle-card{background:linear-gradient(115deg,#1a1430 0%,#2a2048 100%)}
+
 @media(max-width:1100px){
   .report-grid{grid-template-columns:repeat(2,1fr)}
   main{padding:34px}

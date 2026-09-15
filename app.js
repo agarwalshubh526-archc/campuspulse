@@ -93,9 +93,9 @@ function setHotspot(){
   Object.entries(counts).forEach(([p,c])=>{ if(c>topCount){topCount=c; topPlace=p;} });
   const nameEl = document.querySelector('#hotspot-name');
   const metaEl = document.querySelector('#hotspot-meta');
-  if(nameEl && metaEl && topCount>1){
+  if(nameEl && metaEl && topCount>=1){
     nameEl.textContent = `${topPlace} is this week’s hotspot`;
-    metaEl.textContent = `${topCount} reports · Facilities team assigned`;
+    metaEl.textContent = `${topCount} report${topCount>1?'s':''} · Facilities team assigned`;
   }
 }
 
@@ -136,6 +136,7 @@ function tracker(r){
     ${teamActions}`;
 
   document.querySelector('#detail-layer').classList.add('show');
+  document.body.classList.add('modal-open');
 
   document.querySelector('#support-btn').onclick = () => toggleSupport(r.id);
 
@@ -223,9 +224,10 @@ function suggestCategory(text){
 
 /* Modal */
 const modal = document.querySelector('#modal-layer');
-function openModal(){ modal.classList.add('show'); categoryLocked=false; document.querySelector('#auto-detect').textContent=''; }
+function openModal(){ modal.classList.add('show'); document.body.classList.add('modal-open'); categoryLocked=false; document.querySelector('#auto-detect').textContent=''; }
 function closeModal(){
   modal.classList.remove('show');
+  document.body.classList.remove('modal-open');
   setTimeout(()=>{
     document.querySelector('#form-state').style.display='block';
     document.querySelector('#success-state').classList.remove('show');
@@ -308,9 +310,10 @@ document.querySelector('#report-form').onsubmit = e => {
   render();
 };
 
-document.querySelector('.close-detail').onclick = () => document.querySelector('#detail-layer').classList.remove('show');
+function closeDetail(){ document.querySelector('#detail-layer').classList.remove('show'); document.body.classList.remove('modal-open'); }
+document.querySelector('.close-detail').onclick = closeDetail;
 document.querySelector('#detail-layer').onclick = e => {
-  if(e.target===document.querySelector('#detail-layer')) document.querySelector('#detail-layer').classList.remove('show');
+  if(e.target===document.querySelector('#detail-layer')) closeDetail();
 };
 
 /* Navigation */

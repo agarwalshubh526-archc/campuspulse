@@ -330,7 +330,12 @@ function render(){
 /* Feed */
 function renderFeed(){
   if(!feedEl) return;
-  feedEl.innerHTML = feedItems.map(x=>`<article class="feed-item ${x.reportId?'clickable':''}" ${x.reportId?`data-report-id="${x.reportId}"`:''}><span class="feed-icon"><i class="fa-solid ${x.icon}"></i></span><p><strong>${x.text}</strong><br>Making campus better, together.</p><time>${x.time}</time></article>`).join('');
+  const openReports = reports.filter(r=>r.status!=='Resolved').slice(0,6);
+  feedEl.innerHTML = `<div class="feed-report-intro"><div><p class="eyebrow">OPEN REPORTS</p><h3>Campus problems needing action</h3></div><span>${openReports.length} open</span></div><div class="report-grid feed-report-grid">${openReports.length?openReports.map(card).join(''):'<div class="empty-state">No open reports right now.</div>'}</div><p class="eyebrow feed-activity-label">ACTIVITY LOG</p>${feedItems.map(x=>`<article class="feed-item ${x.reportId?'clickable':''}" ${x.reportId?`data-report-id="${x.reportId}"`:''}><span class="feed-icon"><i class="fa-solid ${x.icon}"></i></span><p><strong>${x.text}</strong><br>Making campus better, together.</p><time>${x.time}</time></article>`).join('')}`;
+  feedEl.querySelectorAll('.report-card').forEach(item=>item.onclick=()=>{
+    const report = reports.find(r=>r.id===item.dataset.id);
+    if(report) tracker(report);
+  });
   feedEl.querySelectorAll('.feed-item[data-report-id]').forEach(item=>item.onclick=()=>{
     const report = reports.find(r=>r.id===item.dataset.reportId);
     if(report) tracker(report);

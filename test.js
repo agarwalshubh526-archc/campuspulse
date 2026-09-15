@@ -30,7 +30,7 @@ win.addEventListener('load', () => {
 
   // Team resolution authorization
   d.querySelector('#team-toggle').click();
-  d.querySelector('#feed .feed-item[data-report-id="CP-2041"]').click();
+  d.querySelector('#feed .report-card[data-id="CP-2041"]').click();
   assert(d.querySelector('#detail-content').textContent.includes('Air conditioning not working'), 'campus feed opens the linked report');
   assert(d.querySelector('.team-actions button[data-status="Resolved"]'), 'team viewer can update a feed report');
   d.querySelector('.team-actions button[data-status="Resolved"]').click();

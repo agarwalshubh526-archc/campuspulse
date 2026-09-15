@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campuspulse-v4';
+const CACHE_NAME = 'campuspulse-v5';
 const ASSETS = [
   '/',
   '/index.html',

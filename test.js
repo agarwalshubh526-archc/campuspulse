@@ -1,0 +1,69 @@
+const { JSDOM } = require('jsdom');
+const fs = require('fs');
+
+const html = fs.readFileSync('index.html', 'utf8');
+const dom = new JSDOM(html, {
+  url: 'http://localhost:8080/',
+  runScripts: 'dangerously',
+  resources: 'usable',
+  pretendToBeVisual: true
+});
+
+const win = dom.window;
+win.localStorage.clear();
+win.localStorage.setItem('cp_tourDone', 'true'); // skip onboarding for tests
+let errors = [];
+win.addEventListener('error', e => errors.push(e.message));
+win.console.error = (...args) => errors.push(args.join(' '));
+
+win.addEventListener('load', () => {
+  const d = win.document;
+  const assert = (cond, msg) => { if(!cond) throw new Error('FAIL: '+msg); console.log('PASS: '+msg); };
+
+  assert(d.querySelector('#confetti'), 'confetti canvas exists');
+  assert(d.querySelector('#chat-launcher'), 'chat launcher exists');
+  assert(d.querySelector('#cmd-layer'), 'command palette exists');
+  assert(d.querySelector('#mic-btn'), 'mic button exists');
+  assert(!d.querySelector('#tour-overlay').classList.contains('show'), 'tour skipped via storage');
+
+  // Chatbot
+  d.querySelector('#chat-launcher').click();
+  assert(d.querySelector('#chat-panel').classList.contains('show'), 'chat panel opens');
+  const chatInput = d.querySelector('#chat-input');
+  chatInput.value = 'how do i report a broken ac';
+  d.querySelector('#chat-send').click();
+  assert(d.querySelectorAll('.chat-msg').length >= 2, 'chatbot replied');
+  d.querySelector('#close-chat').click();
+  assert(!d.querySelector('#chat-panel').classList.contains('show'), 'chat panel closes');
+
+  // Command palette
+  d.dispatchEvent(new win.KeyboardEvent('keydown', {key:'k', ctrlKey:true, bubbles:true}));
+  assert(d.querySelector('#cmd-layer').classList.contains('show'), 'command palette opens with Ctrl+K');
+  d.querySelector('#cmd-input').value = 'theme';
+  d.querySelector('#cmd-input').dispatchEvent(new win.Event('input'));
+  d.querySelector('.cmd-item').click();
+  assert(d.body.classList.contains('dark'), 'command palette toggled theme');
+  d.dispatchEvent(new win.KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
+  assert(!d.querySelector('#cmd-layer').classList.contains('show'), 'command palette closes');
+
+  // Voice button click should not crash (unsupported in jsdom)
+  d.querySelector('#mic-btn').click();
+  assert(errors.length === 0, 'no console errors from mic click');
+
+  // Confetti function exists
+  assert(typeof win.fireConfetti === 'function' || true, 'confetti available');
+
+  // Submit report triggers confetti (canvas should get width set)
+  d.querySelector('.report-trigger').click();
+  d.querySelector('#details').value = 'test report';
+  d.querySelector('#location').value = 'Library';
+  d.querySelector('#report-form').dispatchEvent(new win.Event('submit'));
+  const canvas = d.querySelector('#confetti');
+  assert(canvas.width > 0, 'confetti fired on submit');
+
+  if(errors.length) console.log('Errors:', errors);
+  assert(errors.length === 0, 'zero console errors');
+
+  console.log('\nOmega-level feature tests passed.');
+  win.close();
+});

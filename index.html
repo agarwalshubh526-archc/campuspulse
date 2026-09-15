@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CampusPulse — Campus, in sync.</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -112,7 +113,7 @@
     </main>
   </div>
 
-  <div class="modal-layer" id="modal-layer"><div class="modal"><button class="close-modal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="form-state"><span class="chip purple-chip"><i class="fa-solid fa-bolt"></i> NEW REPORT</span><h2>What needs attention?</h2><p class="modal-sub">Share the details. We’ll route it to the right team.</p><form id="report-form"><div class="category-select" id="category-select"><button type="button" class="category active" data-category="Facilities"><i class="fa-solid fa-wrench"></i><span>Facilities</span></button><button type="button" class="category" data-category="Safety"><i class="fa-solid fa-shield-halved"></i><span>Safety</span></button><button type="button" class="category" data-category="Cleanliness"><i class="fa-solid fa-broom"></i><span>Cleanliness</span></button><button type="button" class="category" data-category="Tech"><i class="fa-solid fa-wifi"></i><span>Tech</span></button><button type="button" class="category" data-category="Security"><i class="fa-solid fa-user-shield"></i><span>Security</span></button></div><p class="auto-detect" id="auto-detect"></p><label>Location<input required id="location" placeholder="e.g. Science Block, Floor 2" /></label><label>What happened?<textarea required id="details" maxlength="180" placeholder="Describe the issue in a few words…"></textarea><small><span id="char-count">0</span>/180</small></label><label class="evidence-label">Evidence (optional)<input type="file" id="evidence" accept="image/*" /><img id="evidence-preview" class="evidence-preview" alt=""/></label><div class="priority-row"><span>Priority</span><div><button type="button" class="priority active" data-priority="Normal">Normal</button><button type="button" class="priority" data-priority="Urgent">Urgent</button></div></div>
+  <div class="modal-layer" id="modal-layer"><div class="modal"><button class="close-modal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div id="form-state"><span class="chip purple-chip"><i class="fa-solid fa-bolt"></i> NEW REPORT</span><h2>What needs attention?</h2><p class="modal-sub">Share the details. We’ll route it to the right team.</p><form id="report-form"><div class="category-select" id="category-select"><button type="button" class="category active" data-category="Facilities"><i class="fa-solid fa-wrench"></i><span>Facilities</span></button><button type="button" class="category" data-category="Safety"><i class="fa-solid fa-shield-halved"></i><span>Safety</span></button><button type="button" class="category" data-category="Cleanliness"><i class="fa-solid fa-broom"></i><span>Cleanliness</span></button><button type="button" class="category" data-category="Tech"><i class="fa-solid fa-wifi"></i><span>Tech</span></button><button type="button" class="category" data-category="Security"><i class="fa-solid fa-user-shield"></i><span>Security</span></button></div><p class="auto-detect" id="auto-detect"></p><label>Location<input required id="location" placeholder="e.g. Science Block, Floor 2" /></label><label>What happened?<textarea required id="details" maxlength="180" placeholder="Describe the issue in a few words…"></textarea><small><span id="char-count">0</span>/180</small></label><button type="button" class="mic-btn" id="mic-btn" title="Dictate report"><i class="fa-solid fa-microphone"></i> Dictate</button><label class="evidence-label">Evidence (optional)<input type="file" id="evidence" accept="image/*" /><img id="evidence-preview" class="evidence-preview" alt=""/></label><div class="priority-row"><span>Priority</span><div><button type="button" class="priority active" data-priority="Normal">Normal</button><button type="button" class="priority" data-priority="Urgent">Urgent</button></div></div>
 <label class="anonymous-toggle"><input type="checkbox" id="anonymous" /><span class="check"><i class="fa-solid fa-check"></i></span><span>Report anonymously — your identity stays hidden</span></label>
 <button class="primary-btn submit-btn" type="submit">Send report <i class="fa-solid fa-arrow-right"></i></button></form></div><div id="success-state" class="success-state"><div class="success-icon"><i class="fa-solid fa-check"></i></div><span class="chip mint">REPORT SENT</span><h2>Thanks for speaking up.</h2><p>Your report is now visible to the Campus Operations team. We’ll keep you posted here.</p><div class="ticket"><span>REPORT ID</span><strong id="ticket-id">CP-2048</strong></div><button class="primary-btn close-success">Back to campus <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
 
@@ -121,6 +122,32 @@
   <aside class="notice-panel" id="notice-panel"><div class="notice-head"><strong>Notifications</strong><button id="clear-notices">Mark all read</button></div><div class="notice"><i class="fa-solid fa-wrench"></i><div><b>Lab 204 update</b><span>Campus Operations started work on your report.</span></div></div><div class="notice"><i class="fa-solid fa-circle-check"></i><div><b>Issue resolved</b><span>Cafeteria bin request was completed.</span></div></div></aside>
 
   <div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span>Report status updated</span></div>
+
+  <canvas id="confetti" class="confetti-canvas"></canvas>
+
+  <div class="chat-launcher" id="chat-launcher" title="Ask Pulse"><i class="fa-solid fa-comment-dots"></i><span class="chat-ping"></span></div>
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-head"><strong><i class="fa-solid fa-wand-magic-sparkles"></i> Pulse</strong><span>Campus assistant</span><button class="close-chat" id="close-chat" aria-label="Close chat"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="chat-body" id="chat-body"></div>
+    <div class="chat-foot"><input id="chat-input" placeholder="Ask me anything…" /><button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button></div>
+  </div>
+
+  <div class="cmd-layer" id="cmd-layer">
+    <div class="cmd-modal">
+      <div class="cmd-search"><i class="fa-solid fa-magnifying-glass"></i><input id="cmd-input" placeholder="Type a command or search…" autocomplete="off" /></div>
+      <div class="cmd-list" id="cmd-list"></div>
+    </div>
+  </div>
+
+  <div class="tour-overlay" id="tour-overlay">
+    <div class="tour-card" id="tour-card">
+      <span class="chip purple-chip"><i class="fa-solid fa-wand-magic-sparkles"></i> WELCOME</span>
+      <h2 id="tour-title">Welcome to CampusPulse</h2>
+      <p id="tour-text">Your campus, in sync.</p>
+      <div class="tour-actions"><button class="ghost-btn" id="tour-skip">Skip tour</button><button class="primary-btn" id="tour-next">Start tour <i class="fa-solid fa-arrow-right"></i></button></div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

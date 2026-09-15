@@ -471,6 +471,90 @@ body.dark .prediction-grid .prediction-item{background:rgba(255,255,255,0.06);bo
 body.dark .prediction-grid .prediction-item span{color:#c5c6d8}
 
 .map-panel .report-grid{grid-template-columns:1fr}
+
+/* Animated mesh background */
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(at 0% 0%,rgba(108,92,231,0.18) 0,transparent 45%),
+    radial-gradient(at 100% 0%,rgba(0,184,148,0.14) 0,transparent 40%),
+    radial-gradient(at 50% 100%,rgba(255,118,117,0.12) 0,transparent 40%);
+  animation:meshMove 18s ease-in-out infinite alternate;
+}
+@keyframes meshMove{0%{transform:scale(1)}100%{transform:scale(1.08) translate(2%,-1%)}}
+
+/* Spotlight hover on cards */
+.report-card,.metrics article,.chart-card,.feed-item,.health-card,.oracle-card,.welcome-card{
+  position:relative;overflow:hidden;
+}
+.report-card::before,.metrics article::before,.chart-card::before,.feed-item::before,.health-card::before,.oracle-card::before,.welcome-card::before{
+  content:'';position:absolute;left:var(--x,50%);top:var(--y,50%);width:0;height:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,0.18) 0,transparent 60%);transform:translate(-50%,-50%);opacity:0;transition:opacity .3s;width:240px;height:240px;pointer-events:none;
+}
+body.dark .report-card::before,body.dark .metrics article::before,body.dark .chart-card::before,body.dark .feed-item::before,body.dark .health-card::before,body.dark .oracle-card::before,body.dark .welcome-card::before{background:radial-gradient(circle,rgba(255,255,255,0.08) 0,transparent 60%)}
+.report-card:hover::before,.metrics article:hover::before,.chart-card:hover::before,.feed-item:hover::before,.health-card:hover::before,.oracle-card:hover::before,.welcome-card:hover::before{opacity:1}
+
+/* Confetti */
+.confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:200}
+
+/* Chat widget */
+.chat-launcher{
+  position:fixed;right:26px;bottom:26px;width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--purple-light));color:#fff;border:0;
+  display:grid;place-items:center;font-size:24px;cursor:pointer;box-shadow:var(--shadow);z-index:120;transition:.25s;
+}
+.chat-launcher:hover{transform:scale(1.08) rotate(6deg)}
+.chat-ping{position:absolute;top:4px;right:4px;width:12px;height:12px;background:#ff7675;border-radius:50%;border:2px solid var(--bg);animation:pulse 1.5s infinite}
+.chat-panel{
+  position:fixed;right:26px;bottom:96px;width:min(360px,92vw);height:460px;background:var(--glass);border:1px solid var(--line);
+  border-radius:22px;box-shadow:var(--shadow);backdrop-filter:blur(20px);z-index:120;display:none;flex-direction:column;overflow:hidden;
+}
+.chat-panel.show{display:flex;animation:chatIn .25s}
+@keyframes chatIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.chat-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line);background:rgba(108,92,231,0.08)}
+.chat-head strong{font-size:14px;display:flex;align-items:center;gap:6px}
+.chat-head span{margin-left:auto;font-size:11px;color:#7b7f94}
+.close-chat{margin-left:10px;border:0;background:transparent;color:#7b7f94;cursor:pointer;font-size:16px}
+.chat-body{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:82%;padding:11px 13px;border-radius:14px;font-size:12.5px;line-height:1.5;animation:msgIn .25s}
+.chat-msg.bot{align-self:flex-start;background:#f4f5fa;color:#3a3d52;border-bottom-left-radius:4px}
+body.dark .chat-msg.bot{background:rgba(255,255,255,0.08);color:#e9e8fa}
+.chat-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--purple),var(--purple-light));color:#fff;border-bottom-right-radius:4px}
+.chat-foot{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.chat-foot input{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:12.5px Manrope;outline-color:var(--purple);background:var(--surface)}
+.chat-foot button{border:0;width:36px;height:36px;border-radius:10px;background:var(--purple);color:#fff;cursor:pointer;display:grid;place-items:center}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Command palette */
+.cmd-layer{position:fixed;inset:0;background:rgba(15,18,33,0.55);backdrop-filter:blur(4px);z-index:130;display:none;place-items:center;padding:20px;opacity:0;transition:opacity .2s}
+.cmd-layer.show{display:grid;opacity:1}
+.cmd-modal{background:var(--glass);border:1px solid var(--line);border-radius:18px;width:min(520px,100%);box-shadow:var(--shadow);backdrop-filter:blur(20px);overflow:hidden}
+.cmd-search{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.cmd-search i{color:#7b7f94}
+.cmd-search input{flex:1;border:0;outline:0;background:transparent;font:14px Manrope;color:var(--ink)}
+.cmd-list{max-height:320px;overflow:auto;padding:8px}
+.cmd-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:.15s}
+.cmd-item:hover,.cmd-item.active{background:rgba(108,92,231,0.1)}
+.cmd-item i{width:18px;text-align:center;color:var(--purple)}
+.cmd-item b{font-size:12.5px}
+.cmd-item span{margin-left:auto;font-size:10px;color:#7b7f94}
+
+/* Mic button */
+.mic-btn{
+  display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--line);border-radius:8px;
+  padding:7px 10px;font:700 10.5px Manrope;color:#7b7f94;cursor:pointer;margin:6px 0 0;transition:.2s;
+}
+.mic-btn:hover{border-color:var(--purple);color:var(--purple)}
+.mic-btn.listening{background:#ff7675;color:#fff;border-color:#ff7675;animation:pulse 1.2s infinite}
+
+/* Onboarding tour */
+.tour-overlay{position:fixed;inset:0;background:rgba(15,18,33,0.65);backdrop-filter:blur(3px);z-index:140;display:none;place-items:center;padding:20px}
+.tour-overlay.show{display:grid}
+.tour-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:32px;max-width:420px;width:100%;box-shadow:var(--shadow);text-align:center;animation:modalIn .3s}
+.tour-card h2{margin:16px 0 8px}
+.tour-card p{color:#7b7f94;margin:0 0 22px}
+.tour-actions{display:flex;gap:12px;justify-content:center}
+
 .anonymous-toggle{
   display:flex;align-items:center;gap:10px;margin:18px 0 8px;font-size:12px;font-weight:700;color:#4f5064;cursor:pointer;
 }

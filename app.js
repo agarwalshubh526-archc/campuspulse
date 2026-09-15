@@ -249,7 +249,7 @@ function changeStatus(id, newStatus){
   const oldStatus = r.status;
   r.status = newStatus;
   r.priority = newStatus==='Urgent'?'Urgent':r.priority;
-  if(newStatus==='Resolved') addKarma('resolve');
+  if(newStatus==='Resolved'){ addKarma('resolve'); fireConfetti(); }
   saveJSON('campusPulseReports', reports);
   showToast(`Status updated to ${newStatus}`);
   addFeed('fa-circle-check', `Campus Operations moved ${r.id} from ${oldStatus} to ${newStatus}`);
@@ -419,6 +419,7 @@ if(reportForm) reportForm.onsubmit = e => {
   reports.unshift(n);
   saveJSON('campusPulseReports', reports);
   addKarma('report');
+  fireConfetti();
   const ticket=document.querySelector('#ticket-id'); if(ticket) ticket.textContent = n.id;
   const fs=document.querySelector('#form-state'); if(fs) fs.style.display='none';
   const ss=document.querySelector('#success-state'); if(ss) ss.classList.add('show');
@@ -507,6 +508,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='t' || e.key==='T') setTeamMode(!teamMode);
   if(e.key==='m' || e.key==='M') document.querySelector('[data-view="map"]')?.click();
   if(e.key==='/'){ e.preventDefault(); if(searchInput) searchInput.focus(); }
+  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openCmd(); }
 });
 
 /* Map */
@@ -630,6 +632,201 @@ function liveTick(){
   }
 }
 setInterval(liveTick, 22000);
+
+/* Service Worker / PWA */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+/* Spotlight hover effect */
+document.addEventListener('mousemove', e=>{
+  const card = e.target.closest('.report-card,.metrics article,.chart-card,.feed-item,.health-card,.oracle-card,.welcome-card');
+  if(!card) return;
+  const rect = card.getBoundingClientRect();
+  card.style.setProperty('--x', (e.clientX-rect.left)+'px');
+  card.style.setProperty('--y', (e.clientY-rect.top)+'px');
+});
+
+/* Confetti */
+function fireConfetti(){
+  const canvas = document.querySelector('#confetti');
+  if(!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return;
+  const pieces = Array.from({length:80},()=>({
+    x:canvas.width/2,y:canvas.height/2,
+    vx:(Math.random()-.5)*14,vy:(Math.random()-1)*12,
+    size:Math.random()*6+3,
+    color:['#6c5ce7','#00b894','#ff7675','#fdcb6e','#a29bfe'][Math.floor(Math.random()*5)],
+    life:100
+  }));
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    pieces.forEach(p=>{
+      if(p.life<=0) return;
+      alive=true;
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.4;p.life--;
+      ctx.fillStyle=p.color;ctx.globalAlpha=p.life/100;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+    });
+    ctx.globalAlpha=1;
+    if(alive) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+
+/* Chatbot */
+const chatLauncher = document.querySelector('#chat-launcher');
+const chatPanel = document.querySelector('#chat-panel');
+const chatBody = document.querySelector('#chat-body');
+const chatInput = document.querySelector('#chat-input');
+const chatSend = document.querySelector('#chat-send');
+const closeChat = document.querySelector('#close-chat');
+function addChat(text, who='bot'){
+  if(!chatBody) return;
+  const div = document.createElement('div');
+  div.className = `chat-msg ${who}`;
+  div.textContent = text;
+  chatBody.appendChild(div);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+function botReply(text){ addChat(text,'bot'); }
+function processChat(msg){
+  const lower = msg.toLowerCase();
+  addChat(msg,'user');
+  if(lower.includes('report') || lower.includes('broken') || lower.includes('not working')){
+    botReply('I can help with that. Click "Report an issue" and pick a category — or tell me the location and I’ll auto-detect it.');
+    setTimeout(()=>{ openModal(); suggestCategory(msg); }, 900);
+  } else if(lower.includes('status') || lower.includes('track')){
+    botReply('Open any report card to see its live status timeline and assigned team.');
+  } else if(lower.includes('anonymous') || lower.includes('bully') || lower.includes('ragging')){
+    botReply('You can report anonymously. Choose Security and check "Report anonymously" — your identity stays hidden.');
+  } else if(lower.includes('team') || lower.includes('facilities')){
+    botReply('Click the user-gear icon to enable Team mode and update report statuses.');
+  } else if(lower.includes('oracle') || lower.includes('predict')){
+    botReply('Campus Oracle analyzes report clusters to predict what may break next. Check the dashboard or Insights page.');
+  } else if(lower.includes('theme') || lower.includes('dark')){
+    botReply('Use the moon/sun icon in the header to switch themes.');
+  } else if(lower.includes('hello') || lower.includes('hi')){
+    botReply('Hey! I’m Pulse, your campus assistant. Ask me about reporting, tracking, or predictions.');
+  } else {
+    botReply('I’m still learning. Try asking how to report an issue, track status, or use Team mode.');
+  }
+}
+if(chatLauncher) chatLauncher.onclick = () => {
+  chatPanel.classList.toggle('show');
+  if(chatPanel.classList.contains('show') && chatBody.children.length===0){
+    botReply('Hey! I’m Pulse. Ask me how to report an issue, check status, or use anonymous reporting.');
+  }
+};
+if(closeChat) closeChat.onclick = () => chatPanel.classList.remove('show');
+if(chatSend) chatSend.onclick = () => { const v=chatInput.value.trim(); if(v){ processChat(v); chatInput.value=''; } };
+if(chatInput) chatInput.onkeydown = e => { if(e.key==='Enter') chatSend.click(); };
+
+/* Command palette */
+const cmdLayer = document.querySelector('#cmd-layer');
+const cmdInput = document.querySelector('#cmd-input');
+const cmdList = document.querySelector('#cmd-list');
+const commands = [
+  {name:'Go to Dashboard',icon:'fa-table-cells-large',run:()=>document.querySelector('[data-view="dashboard"]')?.click()},
+  {name:'Open Campus Map',icon:'fa-map',run:()=>document.querySelector('[data-view="map"]')?.click()},
+  {name:'View My Reports',icon:'fa-flag',run:()=>document.querySelector('[data-view="reports"]')?.click()},
+  {name:'Open Campus Feed',icon:'fa-compass',run:()=>document.querySelector('[data-view="explore"]')?.click()},
+  {name:'Open Insights',icon:'fa-chart-pie',run:()=>document.querySelector('[data-view="insights"]')?.click()},
+  {name:'Report an issue',icon:'fa-plus',run:()=>openModal()},
+  {name:'Toggle Team mode',icon:'fa-user-gear',run:()=>setTeamMode(!teamMode)},
+  {name:'Toggle theme',icon:'fa-moon',run:()=>toggleTheme()},
+  {name:'Reset demo data',icon:'fa-rotate-right',run:()=>document.querySelector('#reset-demo')?.click()}
+];
+let activeCmd = 0;
+function renderCmd(filter=''){
+  const f = filter.toLowerCase();
+  const list = commands.filter(c=>c.name.toLowerCase().includes(f));
+  cmdList.innerHTML = list.map((c,i)=>`<div class="cmd-item ${i===activeCmd?'active':''}" data-index="${i}"><i class="fa-solid ${c.icon}"></i><b>${c.name}</b><span>↵</span></div>`).join('');
+  cmdList.querySelectorAll('.cmd-item').forEach(el=>{
+    el.onclick = () => { executeCmd(parseInt(el.dataset.index)); };
+  });
+}
+function executeCmd(idx){
+  const f = cmdInput.value.toLowerCase();
+  const list = commands.filter(c=>c.name.toLowerCase().includes(f));
+  if(list[idx]){ list[idx].run(); closeCmd(); }
+}
+function openCmd(){ if(cmdLayer){ cmdLayer.classList.add('show'); cmdInput.value=''; activeCmd=0; renderCmd(); cmdInput.focus(); } }
+function closeCmd(){ if(cmdLayer) cmdLayer.classList.remove('show'); }
+if(cmdInput){
+  cmdInput.oninput = () => { activeCmd=0; renderCmd(cmdInput.value); };
+  cmdInput.onkeydown = e => {
+    const f = cmdInput.value.toLowerCase();
+    const list = commands.filter(c=>c.name.toLowerCase().includes(f));
+    if(e.key==='ArrowDown'){ activeCmd=(activeCmd+1)%list.length; renderCmd(f); }
+    if(e.key==='ArrowUp'){ activeCmd=(activeCmd-1+list.length)%list.length; renderCmd(f); }
+    if(e.key==='Enter'){ executeCmd(activeCmd); }
+    if(e.key==='Escape') closeCmd();
+  };
+}
+if(cmdLayer) cmdLayer.onclick = e => { if(e.target===cmdLayer) closeCmd(); };
+
+/* Voice input */
+const micBtn = document.querySelector('#mic-btn');
+if(micBtn){
+  micBtn.onclick = () => {
+    if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+      showToast('Voice input is not supported in this browser.'); return;
+    }
+    const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new Speech();
+    rec.lang = 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    micBtn.classList.add('listening');
+    rec.start();
+    rec.onresult = e => {
+      const text = e.results[0][0].transcript;
+      const details = document.querySelector('#details');
+      if(details){ details.value = text; details.dispatchEvent(new Event('input')); }
+      showToast('Voice captured');
+    };
+    rec.onerror = () => showToast('Voice input failed');
+    rec.onend = () => micBtn.classList.remove('listening');
+  };
+}
+
+/* Onboarding tour */
+const tourOverlay = document.querySelector('#tour-overlay');
+const tourTitle = document.querySelector('#tour-title');
+const tourText = document.querySelector('#tour-text');
+const tourNext = document.querySelector('#tour-next');
+const tourSkip = document.querySelector('#tour-skip');
+const tourSteps = [
+  {title:'Welcome to CampusPulse',text:'Your smart campus issue hub — report, track, and predict campus problems.'},
+  {title:'Make a report',text:'Click "Report an issue" to file facilities, safety, tech, or anonymous security reports.'},
+  {title:'Campus Oracle',text:'See predictive alerts about what may break next, based on real report patterns.'},
+  {title:'Team mode',text:'Facilities staff can toggle Team mode to update statuses directly.'},
+  {title:'You are all set',text:'Use Cmd/Ctrl+K for quick commands, or ask Pulse the chatbot for help.'}
+];
+let tourIdx = 0;
+function showTour(step){
+  if(!tourTitle || !tourText) return;
+  tourTitle.textContent = step.title;
+  tourText.textContent = step.text;
+  tourNext.innerHTML = tourIdx===tourSteps.length-1?'Done <i class="fa-solid fa-check"></i>':'Next <i class="fa-solid fa-arrow-right"></i>';
+}
+function nextTour(){
+  tourIdx++;
+  if(tourIdx>=tourSteps.length){ tourOverlay.classList.remove('show'); saveJSON('cp_tourDone', true); return; }
+  showTour(tourSteps[tourIdx]);
+}
+if(tourOverlay && tourNext && !loadJSON('cp_tourDone', false)){
+  setTimeout(()=>{ tourOverlay.classList.add('show'); showTour(tourSteps[0]); }, 1200);
+  tourNext.onclick = nextTour;
+  tourSkip.onclick = () => { tourOverlay.classList.remove('show'); saveJSON('cp_tourDone', true); };
+}
 
 /* Init */
 applyTheme(theme);

@@ -60,8 +60,13 @@
 - Single weakest area found: static numbers and a one-click support button that felt shallow.
 - **Fixed:** wired all counters to live data, made support a toggle tied to the user, and added a demo-reset for judges.
 
+## Deployment
+- **GitHub repo:** https://github.com/agarwalshubh526-archc/campuspulse
+- **Live site:** https://campuspulse-kohl.vercel.app
+- **Pitch deck:** https://campuspulse-kohl.vercel.app/slides.html
+
 ## Final submission checklist
-1. Open `index.html` in Chrome; if data looks stale, click **Reset demo** in the sidebar (or clear `campusPulseReports` in LocalStorage) and reload. **1 min**
+1. Open the live site at https://campuspulse-kohl.vercel.app in Chrome; if data looks stale, click **Reset demo** in the sidebar (or clear `campusPulseReports` in LocalStorage) and reload. **1 min**
 2. Demo student flow: click **Report an issue**, type `wifi down in library`, watch **Auto-detect** pick Tech, add location, submit. **1 min**
 3. Point out success ticket, live feed update, and Campus Health score change. **30 sec**
 4. Toggle **Team mode** (user-gear icon), open a report, change status to **Resolved**, show health/feed react. **1 min**

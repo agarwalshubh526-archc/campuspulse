@@ -29,7 +29,6 @@ win.addEventListener('load', () => {
   assert(!d.querySelector('#tour-overlay').classList.contains('show'), 'tour skipped via storage');
 
   // Team resolution authorization
-  d.querySelector('#team-toggle').click();
   d.querySelector('#report-grid .report-card').click();
   d.querySelector('.team-actions button[data-status="Resolved"]').click();
   assert(d.querySelector('#resolve-layer').classList.contains('show'), 'resolution password prompt opens');

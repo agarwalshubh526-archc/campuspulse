@@ -197,7 +197,7 @@ function tracker(r){
     <button type="button" class="${r.status==='In progress'?'active':''}" data-status="In progress">In progress</button>
     <button type="button" class="${r.status==='Urgent'?'active':''}" data-status="Urgent">Urgent</button>
     <button type="button" class="${r.status==='Resolved'?'active':''}" data-status="Resolved">Resolved</button>
-  </div></div>` : '';
+  </div></div>` : `<div class="team-actions"><span>TEAM ACTION</span><div class="status-options"><button type="button" class="resolve-lock" data-status="Resolved" ${resolved?'disabled':''}><i class="fa-solid fa-lock"></i> ${resolved?'Resolved':'Mark as resolved'}</button></div></div>`;
   const image = r.image ? `<img src="${r.image}" class="detail-image" alt="Report evidence"/>` : '';
   const anonBanner = r.anonymous ? `<div class="anon-banner"><i class="fa-solid fa-user-secret"></i> Anonymous report — identity protected</div>` : '';
   const ownerLabel = r.anonymous ? 'Campus Safety Team' : 'Campus Operations';
@@ -224,11 +224,9 @@ function tracker(r){
 
   document.querySelector('#support-btn').onclick = () => toggleSupport(r.id);
 
-  if(teamMode){
-    document.querySelectorAll('.team-actions button').forEach(btn=>{
-      btn.onclick = () => changeStatus(r.id, btn.dataset.status);
-    });
-  }
+  document.querySelectorAll('.team-actions button').forEach(btn=>{
+    btn.onclick = () => changeStatus(r.id, btn.dataset.status);
+  });
 }
 
 function toggleSupport(id){

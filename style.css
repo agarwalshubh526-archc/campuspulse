@@ -463,9 +463,20 @@ body.dark .labels text{fill:#c5c6d8}
 .confidence i{height:100%;display:block;background:linear-gradient(90deg,#bff6d8,#a29bfe);border-radius:10px;transition:width .6s}
 .prediction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
 body.dark .oracle-card{background:linear-gradient(115deg,#1a1430 0%,#2a2048 100%)}
+.map-panel .report-grid{grid-template-columns:1fr}
+.prediction-grid .prediction-item{background:var(--glass);border-color:var(--line);color:var(--ink)}
+.prediction-grid .prediction-item span{color:#7b7f94}
+body.dark .prediction-grid .prediction-item{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.08);color:#fff}
+body.dark .prediction-grid .prediction-item span{color:#c5c6d8}
+
+.map-panel .report-grid{grid-template-columns:1fr}
+body.dark form label,body.dark .priority:not(.active),body.dark .team-actions button,body.dark .leaderboard-card li,body.dark .map-legend{color:#c5c6d8}
+body.dark .empty-state,body.dark .notice span,body.dark .metrics p{color:#9fa2b5}
+body.dark .search{color:#c5c6d8}
 
 @media(max-width:1100px){
   .report-grid{grid-template-columns:repeat(2,1fr)}
+  .analytics-grid{grid-template-columns:repeat(2,1fr)}
   main{padding:34px}
   .hero-grid{grid-template-columns:1.3fr .85fr}
 }
@@ -477,9 +488,11 @@ body.dark .oracle-card{background:linear-gradient(115deg,#1a1430 0%,#2a2048 100%
   .app-shell main{margin:0;width:100%;padding:26px 18px 60px}
   .header-actions .icon-btn{display:none}
   .header-actions .team-toggle{display:flex!important}
+  .header-actions #theme-toggle{display:flex!important}
   header{margin-bottom:28px}
   h1{font-size:24px}
-  .hero-grid,.metrics,.report-grid,.insight-stats{grid-template-columns:1fr}
+  .hero-grid,.metrics,.report-grid,.insight-stats,.analytics-grid,.prediction-grid{grid-template-columns:1fr}
+  .map-shell{grid-template-columns:1fr}
   .welcome-copy{max-width:68%}
   .hero-orb{right:-50px;opacity:.75;width:220px;height:220px}
   .health-card{min-height:auto}

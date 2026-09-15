@@ -131,7 +131,7 @@ function generatePredictions(){
   const zoneGroups={};
   reports.filter(r=>r.status!=='Resolved').forEach(r=>{
     const z=zoneOf(r.loc);
-    if(!catGroups[r.cat]) catGroups[r.cat]={zone:'any campus location',cat:r.cat,count:0,supporters:0};
+    if(!catGroups[r.cat]) catGroups[r.cat]={zone:'campus-wide',cat:r.cat,count:0,supporters:0};
     catGroups[r.cat].count++;
     catGroups[r.cat].supporters += (r.supporters||0);
     if(!zoneGroups[z]) zoneGroups[z]={zone:z,cat:'Multi-category issue',count:0,supporters:0};
@@ -153,8 +153,9 @@ function renderOracle(){
   if(!headline || !meta) return;
   if(preds.length){
     const top = preds[0];
-    const zoneText = top.zone==='any campus location'?'anywhere on campus':'in '+top.zone;
-    headline.textContent = `${top.cat} issue likely ${zoneText}`;
+    const catText = top.cat==='Multi-category issue'?'Multiple issues':top.cat+' issue';
+    const zoneText = top.zone==='campus-wide'?'anywhere on campus':'in '+top.zone;
+    headline.textContent = `${catText} likely ${zoneText}`;
     meta.textContent = `${top.confidence}% confidence · based on ${top.count} recent reports`;
   } else {
     headline.textContent = 'No strong failure signals yet';
@@ -162,7 +163,10 @@ function renderOracle(){
   }
   const list = document.querySelector('#prediction-list');
   const insights = document.querySelector('#insights-predictions');
-  const html = preds.map(p=>`<article class="prediction-item"><b>${p.cat} · ${p.zone}</b><span>${p.count} reports · ${p.confidence}% confidence</span><div class="confidence"><i style="width:${p.confidence}%"></i></div></article>`).join('');
+  const html = preds.map(p=>{
+    const cat = p.cat==='Multi-category issue'?'Multiple issues':p.cat;
+    return `<article class="prediction-item"><b>${cat} · ${p.zone}</b><span>${p.count} reports · ${p.confidence}% confidence</span><div class="confidence"><i style="width:${p.confidence}%"></i></div></article>`;
+  }).join('');
   if(list) list.innerHTML = html;
   if(insights) insights.innerHTML = preds.length ? html : '<div class="empty-state"><i class="fa-solid fa-wand-magic-sparkles"></i>No predictions yet — more reports help the Oracle learn.</div>';
 }

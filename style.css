@@ -519,8 +519,9 @@ body.dark .search{color:#c5c6d8}
   .filter-row{overflow:auto;padding-bottom:4px;width:100%}
   .filter{white-space:nowrap}
   .search{width:100%}
-  .section-head{margin-top:28px}
   .category-select{grid-template-columns:repeat(3,1fr)}
+  .section-head{margin-top:28px}
+
   .insight-hero{padding:30px 24px}
   .insight-hero h2{font-size:32px}
   .hotspot{align-items:flex-start;flex-wrap:wrap}

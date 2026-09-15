@@ -60,8 +60,10 @@
 - Single weakest area found: static numbers and a one-click support button that felt shallow.
 - **Fixed:** wired all counters to live data, made support a toggle tied to the user, and added a demo-reset for judges.
 
-## Unique differentiator: Campus Oracle
-While most hackathon projects stop at reactive issue reporting, CampusPulse adds **Campus Oracle** — a client-side predictive intelligence layer that analyzes report clusters (location + category patterns) to surface *what is likely to break next* with a confidence score. It turns a complaint board into a proactive maintenance tool.
+## Unique differentiators
+- **Campus Oracle:** a client-side predictive intelligence layer that analyzes report clusters (location + category patterns) to surface *what is likely to break next* with a confidence score — turning a complaint board into a proactive maintenance tool.
+- **Anonymous Security reporting:** students can report bullying, ragging, harassment, theft, vandalism, or broken equipment without revealing their identity. Anonymous reports are routed to the Campus Safety Team and hidden from "My reports."
+- **Team mode + Karma:** the same app serves both students and facilities staff, with gamified points for contributing to a better campus.
 
 ## Deployment
 - **GitHub repo:** https://github.com/agarwalshubh526-archc/campuspulse

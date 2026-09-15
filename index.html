@@ -12,10 +12,8 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="detail.css" />
   <link rel="stylesheet" href="functional.css" />
-  <link rel="stylesheet" href="gate.css" />
 </head>
-<body class="locked">
-  <section class="site-gate" id="site-gate" aria-labelledby="gate-title"><div class="gate-card"><div class="gate-mark"><i class="fa-solid fa-bolt"></i></div><h1 id="gate-title">CampusPulse access</h1><p>Enter the event password to explore the smart campus experience.</p><label for="gate-password">EVENT PASSWORD</label><div class="gate-row"><input id="gate-password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" aria-describedby="gate-error" /><button class="primary-btn" id="gate-submit">Unlock</button></div><p class="gate-error" id="gate-error" aria-live="polite"></p></div></section>
+<body>
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="#"><span class="brand-mark"><i class="fa-solid fa-bolt"></i></span><span>Campus<span>Pulse</span></span></a>
@@ -120,6 +118,7 @@
 <button class="primary-btn submit-btn" type="submit">Send report <i class="fa-solid fa-arrow-right"></i></button></form></div><div id="success-state" class="success-state"><div class="success-icon"><i class="fa-solid fa-check"></i></div><span class="chip mint">REPORT SENT</span><h2>Thanks for speaking up.</h2><p>Your report is now visible to the Campus Operations team. We’ll keep you posted here.</p><div class="ticket"><span>REPORT ID</span><strong id="ticket-id">CP-2048</strong></div><button class="primary-btn close-success">Back to campus <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
 
   <div class="modal-layer" id="detail-layer"><div class="modal detail-modal"><button class="close-detail" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><span class="chip purple-chip"><i class="fa-solid fa-eye"></i> REPORT TRACKER</span><div id="detail-content"></div></div></div>
+  <div class="modal-layer" id="resolve-layer"><div class="modal resolve-modal"><button class="close-resolve" aria-label="Close"><i class="fa-solid fa-xmark"></i></button><div class="resolve-icon"><i class="fa-solid fa-lock"></i></div><span class="chip purple-chip">TEAM AUTHORIZATION</span><h2>Confirm resolution</h2><p>Enter the team password to mark this report as resolved.</p><label for="resolve-password">TEAM PASSWORD</label><input id="resolve-password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Enter password" aria-describedby="resolve-error" /><p class="resolve-error" id="resolve-error" aria-live="polite"></p><button class="primary-btn" id="resolve-submit">Mark as resolved <i class="fa-solid fa-check"></i></button></div></div>
 
   <aside class="notice-panel" id="notice-panel"><div class="notice-head"><strong>Notifications</strong><button id="clear-notices">Mark all read</button></div><div class="notice"><i class="fa-solid fa-wrench"></i><div><b>Lab 204 update</b><span>Campus Operations started work on your report.</span></div></div><div class="notice"><i class="fa-solid fa-circle-check"></i><div><b>Issue resolved</b><span>Cafeteria bin request was completed.</span></div></div></aside>
 

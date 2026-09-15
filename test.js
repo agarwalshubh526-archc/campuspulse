@@ -20,17 +20,27 @@ win.addEventListener('load', () => {
   const d = win.document;
   const assert = (cond, msg) => { if(!cond) throw new Error('FAIL: '+msg); console.log('PASS: '+msg); };
 
-  assert(d.querySelector('#site-gate'), 'event access gate exists');
-  d.querySelector('#gate-password').value = '2007';
-  d.querySelector('#gate-submit').click();
-  assert(d.querySelector('#site-gate').classList.contains('hide'), 'correct event password unlocks site');
-  assert(!d.body.classList.contains('locked'), 'site interaction unlocks after access');
+  assert(!d.querySelector('#site-gate'), 'site stays open for students and judges');
 
   assert(d.querySelector('#confetti'), 'confetti canvas exists');
   assert(d.querySelector('#chat-launcher'), 'chat launcher exists');
   assert(d.querySelector('#cmd-layer'), 'command palette exists');
   assert(d.querySelector('#mic-btn'), 'mic button exists');
   assert(!d.querySelector('#tour-overlay').classList.contains('show'), 'tour skipped via storage');
+
+  // Team resolution authorization
+  d.querySelector('#team-toggle').click();
+  d.querySelector('#report-grid .report-card').click();
+  d.querySelector('.team-actions button[data-status="Resolved"]').click();
+  assert(d.querySelector('#resolve-layer').classList.contains('show'), 'resolution password prompt opens');
+  d.querySelector('#resolve-password').value = 'wrong';
+  d.querySelector('#resolve-submit').click();
+  assert(d.querySelector('#resolve-layer').classList.contains('show'), 'wrong password does not resolve report');
+  assert(d.querySelector('#resolve-error').textContent.includes('Incorrect'), 'wrong password feedback appears');
+  d.querySelector('#resolve-password').value = '2007';
+  d.querySelector('#resolve-submit').click();
+  assert(!d.querySelector('#resolve-layer').classList.contains('show'), 'correct password closes authorization prompt');
+  assert(d.querySelector('#detail-content .tracker-status strong').textContent === 'Resolved', 'correct password resolves the report');
 
   // Chatbot
   d.querySelector('#chat-launcher').click();

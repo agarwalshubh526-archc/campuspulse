@@ -246,6 +246,13 @@ function toggleSupport(id){
 function changeStatus(id, newStatus){
   const r = reports.find(x=>x.id===id);
   if(!r || r.status===newStatus) return;
+  if(newStatus==='Resolved'){ requestResolution(id); return; }
+  applyStatusChange(id, newStatus);
+}
+
+function applyStatusChange(id, newStatus){
+  const r = reports.find(x=>x.id===id);
+  if(!r || r.status===newStatus) return;
   const oldStatus = r.status;
   r.status = newStatus;
   r.priority = newStatus==='Urgent'?'Urgent':r.priority;
@@ -256,6 +263,44 @@ function changeStatus(id, newStatus){
   tracker(r);
   render();
 }
+
+let pendingResolveId = null;
+function requestResolution(id){
+  pendingResolveId = id;
+  const layer = document.querySelector('#resolve-layer');
+  const input = document.querySelector('#resolve-password');
+  const error = document.querySelector('#resolve-error');
+  if(error) error.textContent = '';
+  if(input) input.value = '';
+  if(layer) layer.classList.add('show');
+  document.body.classList.add('modal-open');
+  setTimeout(()=>input?.focus(), 0);
+}
+function closeResolution(){
+  document.querySelector('#resolve-layer')?.classList.remove('show');
+  pendingResolveId = null;
+  document.body.classList.remove('modal-open');
+}
+function confirmResolution(){
+  const input = document.querySelector('#resolve-password');
+  const error = document.querySelector('#resolve-error');
+  if(!pendingResolveId || !input) return;
+  if(input.value !== '2007'){
+    if(error) error.textContent = 'Incorrect password. Resolution was not changed.';
+    input.focus(); input.select();
+    return;
+  }
+  const id = pendingResolveId;
+  closeResolution();
+  applyStatusChange(id, 'Resolved');
+}
+const resolveLayer = document.querySelector('#resolve-layer');
+const resolveSubmit = document.querySelector('#resolve-submit');
+const resolvePassword = document.querySelector('#resolve-password');
+if(resolveSubmit) resolveSubmit.onclick = confirmResolution;
+if(resolvePassword) resolvePassword.onkeydown = e => { if(e.key==='Enter') confirmResolution(); };
+document.querySelector('.close-resolve')?.addEventListener('click', closeResolution);
+if(resolveLayer) resolveLayer.onclick = e => { if(e.target===resolveLayer) closeResolution(); };
 
 /* Rendering */
 function render(){
@@ -833,22 +878,3 @@ applyTheme(theme);
 updateHeader();
 renderFeed();
 render();
-
-/* Event access gate — session-only, so judges enter once per browser session. */
-const siteGate = document.querySelector('#site-gate');
-const gatePassword = document.querySelector('#gate-password');
-const gateSubmit = document.querySelector('#gate-submit');
-const gateError = document.querySelector('#gate-error');
-function unlockSite(){
-  sessionStorage.setItem('cp_event_access','granted');
-  if(siteGate) siteGate.classList.add('hide');
-  document.body.classList.remove('locked');
-}
-function checkGate(){
-  if(!gatePassword) return;
-  if(gatePassword.value === '2007'){ unlockSite(); }
-  else { gateError.textContent='That password is not correct. Please try again.'; gatePassword.focus(); gatePassword.select(); }
-}
-if(sessionStorage.getItem('cp_event_access') === 'granted') unlockSite();
-if(gateSubmit) gateSubmit.onclick = checkGate;
-if(gatePassword) gatePassword.onkeydown = e => { if(e.key==='Enter') checkGate(); };

@@ -29,7 +29,10 @@ win.addEventListener('load', () => {
   assert(!d.querySelector('#tour-overlay').classList.contains('show'), 'tour skipped via storage');
 
   // Team resolution authorization
-  d.querySelector('#report-grid .report-card').click();
+  d.querySelector('#team-toggle').click();
+  d.querySelector('#feed .feed-item[data-report-id="CP-2041"]').click();
+  assert(d.querySelector('#detail-content').textContent.includes('Air conditioning not working'), 'campus feed opens the linked report');
+  assert(d.querySelector('.team-actions button[data-status="Resolved"]'), 'team viewer can update a feed report');
   d.querySelector('.team-actions button[data-status="Resolved"]').click();
   assert(d.querySelector('#resolve-layer').classList.contains('show'), 'resolution password prompt opens');
   d.querySelector('#resolve-password').value = 'wrong';

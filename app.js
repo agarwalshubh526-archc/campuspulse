@@ -36,10 +36,10 @@ const myGrid = document.querySelector('#my-report-grid');
 const feedEl = document.querySelector('#feed');
 
 let feedItems = [
-  {icon:'fa-circle-check', text:'Facilities team resolved the cafeteria bin request', time:'12 min ago'},
-  {icon:'fa-wrench', text:'Maintenance started work on Lab 204', time:'24 min ago'},
-  {icon:'fa-user-group', text:'Three students supported the Wi-Fi study-zone report', time:'1 hr ago'},
-  {icon:'fa-bolt', text:'New hotspot identified: Science Block', time:'2 hrs ago'}
+  {icon:'fa-circle-check', text:'Facilities team resolved the cafeteria bin request', time:'12 min ago', reportId:'CP-2035'},
+  {icon:'fa-wrench', text:'Maintenance started work on Lab 204', time:'24 min ago', reportId:'CP-2041'},
+  {icon:'fa-user-group', text:'Three students supported the Wi-Fi study-zone report', time:'1 hr ago', reportId:'CP-2032'},
+  {icon:'fa-bolt', text:'New hotspot identified: Science Block', time:'2 hrs ago', reportId:'CP-2041'}
 ];
 
 /* Helpers */
@@ -258,7 +258,7 @@ function applyStatusChange(id, newStatus){
   if(newStatus==='Resolved'){ addKarma('resolve'); fireConfetti(); }
   saveJSON('campusPulseReports', reports);
   showToast(`Status updated to ${newStatus}`);
-  addFeed('fa-circle-check', `Campus Operations moved ${r.id} from ${oldStatus} to ${newStatus}`);
+  addFeed('fa-circle-check', `Campus Operations moved ${r.id} from ${oldStatus} to ${newStatus}`, r.id);
   tracker(r);
   render();
 }
@@ -329,10 +329,15 @@ function render(){
 
 /* Feed */
 function renderFeed(){
-  if(feedEl) feedEl.innerHTML = feedItems.map(x=>`<article class="feed-item"><span class="feed-icon"><i class="fa-solid ${x.icon}"></i></span><p><strong>${x.text}</strong><br>Making campus better, together.</p><time>${x.time}</time></article>`).join('');
+  if(!feedEl) return;
+  feedEl.innerHTML = feedItems.map(x=>`<article class="feed-item ${x.reportId?'clickable':''}" ${x.reportId?`data-report-id="${x.reportId}"`:''}><span class="feed-icon"><i class="fa-solid ${x.icon}"></i></span><p><strong>${x.text}</strong><br>Making campus better, together.</p><time>${x.time}</time></article>`).join('');
+  feedEl.querySelectorAll('.feed-item[data-report-id]').forEach(item=>item.onclick=()=>{
+    const report = reports.find(r=>r.id===item.dataset.reportId);
+    if(report) tracker(report);
+  });
 }
-function addFeed(icon,text){
-  feedItems.unshift({icon,text,time:'Just now'});
+function addFeed(icon,text,reportId=null){
+  feedItems.unshift({icon,text,time:'Just now',reportId});
   if(feedItems.length>8) feedItems.pop();
   renderFeed();
 }
@@ -477,7 +482,7 @@ if(reportForm) reportForm.onsubmit = e => {
   const ticket=document.querySelector('#ticket-id'); if(ticket) ticket.textContent = n.id;
   const fs=document.querySelector('#form-state'); if(fs) fs.style.display='none';
   const ss=document.querySelector('#success-state'); if(ss) ss.classList.add('show');
-  addFeed('fa-bolt', `New ${n.cat.toLowerCase()} report submitted: ${n.title}`);
+  addFeed('fa-bolt', `New ${n.cat.toLowerCase()} report submitted: ${n.title}`, n.id);
   render();
 };
 
@@ -681,7 +686,7 @@ function liveTick(){
   if(Math.random()>0.6){
     r.supporters = (r.supporters||0)+1;
     saveJSON('campusPulseReports', reports);
-    addFeed('fa-user-group', `Another student supported ${r.id}`);
+    addFeed('fa-user-group', `Another student supported ${r.id}`, r.id);
     render();
   }
 }

@@ -833,3 +833,22 @@ applyTheme(theme);
 updateHeader();
 renderFeed();
 render();
+
+/* Event access gate — session-only, so judges enter once per browser session. */
+const siteGate = document.querySelector('#site-gate');
+const gatePassword = document.querySelector('#gate-password');
+const gateSubmit = document.querySelector('#gate-submit');
+const gateError = document.querySelector('#gate-error');
+function unlockSite(){
+  sessionStorage.setItem('cp_event_access','granted');
+  if(siteGate) siteGate.classList.add('hide');
+  document.body.classList.remove('locked');
+}
+function checkGate(){
+  if(!gatePassword) return;
+  if(gatePassword.value === '2007'){ unlockSite(); }
+  else { gateError.textContent='That password is not correct. Please try again.'; gatePassword.focus(); gatePassword.select(); }
+}
+if(sessionStorage.getItem('cp_event_access') === 'granted') unlockSite();
+if(gateSubmit) gateSubmit.onclick = checkGate;
+if(gatePassword) gatePassword.onkeydown = e => { if(e.key==='Enter') checkGate(); };

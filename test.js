@@ -20,6 +20,12 @@ win.addEventListener('load', () => {
   const d = win.document;
   const assert = (cond, msg) => { if(!cond) throw new Error('FAIL: '+msg); console.log('PASS: '+msg); };
 
+  assert(d.querySelector('#site-gate'), 'event access gate exists');
+  d.querySelector('#gate-password').value = '2007';
+  d.querySelector('#gate-submit').click();
+  assert(d.querySelector('#site-gate').classList.contains('hide'), 'correct event password unlocks site');
+  assert(!d.body.classList.contains('locked'), 'site interaction unlocks after access');
+
   assert(d.querySelector('#confetti'), 'confetti canvas exists');
   assert(d.querySelector('#chat-launcher'), 'chat launcher exists');
   assert(d.querySelector('#cmd-layer'), 'command palette exists');

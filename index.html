@@ -12,8 +12,10 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="detail.css" />
   <link rel="stylesheet" href="functional.css" />
+  <link rel="stylesheet" href="gate.css" />
 </head>
-<body>
+<body class="locked">
+  <section class="site-gate" id="site-gate" aria-labelledby="gate-title"><div class="gate-card"><div class="gate-mark"><i class="fa-solid fa-bolt"></i></div><h1 id="gate-title">CampusPulse access</h1><p>Enter the event password to explore the smart campus experience.</p><label for="gate-password">EVENT PASSWORD</label><div class="gate-row"><input id="gate-password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" aria-describedby="gate-error" /><button class="primary-btn" id="gate-submit">Unlock</button></div><p class="gate-error" id="gate-error" aria-live="polite"></p></div></section>
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="#"><span class="brand-mark"><i class="fa-solid fa-bolt"></i></span><span>Campus<span>Pulse</span></span></a>
